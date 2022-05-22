@@ -1,6 +1,7 @@
+use std::fmt::Display;
 
 /// Semantic Versioning
-/// features: 
+/// features:
 /// 1. convert strings to SemVer
 /// 2. compare 2 versions' using >, <, or ==
 /// 3. into string
@@ -21,7 +22,7 @@ impl SemVer {
     }
     /// create from a string
     pub fn from(s: &str) -> Result<SemVer, SemVerErr> {
-        let mut split = s.split(".");
+        let mut split = s.split('.');
         let major: u32;
         let minor: u32;
         let patch: u32;
@@ -60,19 +61,25 @@ impl SemVer {
         }
         Ok(SemVer::new(major, minor, patch))
     }
+
+    /// if the target version is compatible with self version
     pub fn is_compatible_with(&self, target: &SemVer) -> bool {
-        self.major == target.major
+        if self.major != target.major {
+            false
+        } else if self.major == 0 {
+            self.minor == target.minor
+        } else {
+            true
+        }
+    }
+    pub fn is_stable(&self) -> bool {
+        self.major > 0
     }
 }
 
-impl Into<String> for SemVer {
-    fn into(self) -> String {
-        self.to_string()
-    }
-}
-impl ToString for SemVer {
-    fn to_string(&self) -> String {
-        format!("{}.{}.{}",self.major,self.minor,self.patch)
+impl Display for SemVer {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}.{}.{}", self.major, self.minor, self.patch)
     }
 }
 
@@ -93,7 +100,6 @@ impl ToString for SemVer {
 //         }
 //     }
 // }
-
 
 #[derive(Debug)]
 pub enum SemVerErr {
@@ -124,6 +130,12 @@ mod test {
         assert!(SemVer::from("2.1.2")
             .unwrap()
             .is_compatible_with(&SemVer::new(2, 8, 145)));
+        assert_eq!(
+            SemVer::from("0.1.5")
+                .unwrap()
+                .is_compatible_with(&SemVer::from("0.3.0").unwrap()),
+            false
+        );
     }
 
     #[test]
@@ -136,7 +148,7 @@ mod test {
         assert!(SemVer::new(2, 0, 2) > SemVer::new(0, 1, 1));
     }
     #[test]
-    fn to_string(){
-        assert!(&SemVer::new(7,14,59).to_string()=="7.14.59");
+    fn to_string() {
+        assert!(&SemVer::new(7, 14, 59).to_string() == "7.14.59");
     }
 }
