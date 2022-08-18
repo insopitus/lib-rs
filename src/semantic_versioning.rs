@@ -1,6 +1,7 @@
 use std::fmt::Display;
 
 /// Semantic Versioning
+/// 
 /// features:
 /// 1. convert strings to SemVer
 /// 2. compare 2 versions' using >, <, or ==
@@ -21,7 +22,7 @@ impl SemVer {
         }
     }
     /// create from a string
-    pub fn from(s: &str) -> Result<SemVer, SemVerErr> {
+    pub fn parse(s: &str) -> Result<SemVer, SemVerErr> {
         let mut split = s.split('.');
         let major: u32;
         let minor: u32;
@@ -83,6 +84,16 @@ impl Display for SemVer {
     }
 }
 
+impl Default for SemVer {
+    fn default() -> Self {
+        Self {
+            major: 0,
+            minor: 1,
+            patch: 0,
+        }
+    }
+}
+
 // impl Ord for SemVer {
 //     fn cmp(&self, other: &Self) -> Ordering {
 //         match self.major.cmp(&other.major) {
@@ -123,17 +134,17 @@ mod test {
     }
     #[test]
     fn from_string() {
-        assert_eq!(SemVer::from("2.1.2").unwrap(), SemVer::new(2, 1, 2));
+        assert_eq!(SemVer::parse("2.1.2").unwrap(), SemVer::new(2, 1, 2));
     }
     #[test]
     fn compatible() {
-        assert!(SemVer::from("2.1.2")
+        assert!(SemVer::parse("2.1.2")
             .unwrap()
             .is_compatible_with(&SemVer::new(2, 8, 145)));
         assert_eq!(
-            SemVer::from("0.1.5")
+            SemVer::parse("0.1.5")
                 .unwrap()
-                .is_compatible_with(&SemVer::from("0.3.0").unwrap()),
+                .is_compatible_with(&SemVer::parse("0.3.0").unwrap()),
             false
         );
     }
