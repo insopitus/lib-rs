@@ -1,7 +1,7 @@
 use std::fmt::Display;
 
 /// Semantic Versioning
-/// 
+///
 /// features:
 /// 1. convert strings to SemVer
 /// 2. compare 2 versions' using >, <, or ==
@@ -161,5 +161,21 @@ mod test {
     #[test]
     fn to_string() {
         assert!(&SemVer::new(7, 14, 59).to_string() == "7.14.59");
+    }
+    #[test]
+    fn sort() {
+        let mut arr = [
+            SemVer::new(0, 10, 0),
+            SemVer::new(0, 1, 0),
+            SemVer::new(1, 0, 0),
+        ];
+        arr.sort();
+        assert!(
+            arr == [
+                SemVer::new(0, 1, 0),
+                SemVer::new(0, 10, 0),
+                SemVer::new(1, 0, 0)
+            ]
+        )
     }
 }
