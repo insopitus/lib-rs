@@ -12,29 +12,29 @@ impl<T> DoublyLinkedList<T> {
             length: 0,
         }
     }
-    pub fn append(&mut self, elem: T){
+    pub fn append(&mut self, elem: T) {
         todo!()
     }
-    pub fn prepend(&mut self, elem:T){
+    pub fn prepend(&mut self, elem: T) {
         todo!()
     }
 }
 
-struct Node<T> {
+pub struct Node<T> {
     elem: T,
     next: Box<Option<Node<T>>>,
     prev: Box<Option<Node<T>>>,
 }
 
 impl<T> Node<T> {
-    pub fn new(item: T)->Self {
+    pub fn new(item: T) -> Self {
         todo!()
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+
     #[test]
     fn it_works() {
         assert_eq!(2 + 2, 4);
