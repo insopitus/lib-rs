@@ -1,4 +1,7 @@
-use std::{rc::{Weak, Rc}, cell::RefCell};
+use std::{
+    cell::RefCell,
+    rc::{Rc, Weak},
+};
 
 pub struct DoublyLinkedList<T> {
     head: Option<Rc<RefCell<Node<T>>>>,
@@ -47,14 +50,12 @@ impl<T> Node<T> {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+
     #[test]
     fn it_works() {
-        let mut list = DoublyLinkedList::new();
+        let mut list = super::DoublyLinkedList::new();
         list.append(1);
         list.append(2);
         list.remove_first();
     }
 }
-
-
