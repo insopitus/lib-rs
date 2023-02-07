@@ -119,7 +119,7 @@ pub enum SemVerErr {
 
 #[cfg(test)]
 mod test {
-    use crate::SemVer;
+    use super::SemVer;
 
     #[test]
     fn new() {

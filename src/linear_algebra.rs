@@ -49,11 +49,12 @@ impl Vector3 {
         }
     }
     /// make this vector3 normalized
-    pub fn normalize_mut(&mut self){
+    pub fn normalize_self(mut self)->Self{
         let len = (self.x * self.x + self.y * self.y + self.z * self.z).sqrt();
         self.x /= len;
         self.y /= len;
         self.z /= len;
+        self
     }
 }
 
