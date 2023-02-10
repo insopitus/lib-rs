@@ -24,7 +24,7 @@ pub fn base64_encode(buffer: &[u8]) -> String {
         1 => {
             let a = buffer[slices * 3];
             let char1 = a >> 2;
-            let char2 = a << 6;
+            let char2 = a << 4 & & 0b00111111;
             output.push(TABLE[char1 as usize]);
             output.push(TABLE[char2 as usize]);
             output.push_str("==");
@@ -60,11 +60,25 @@ fn encode_slice(slice: &[u8], str: &mut String) {
     let char2 = (a << 4 | b >> 4) & 0b00111111;
     let char3 = (b << 2 | c >> 6) & 0b00111111;
     let char4 = c & 0b00111111;
-    // TODO use ascii to prevent type casting or raw pointer?
     str.push(TABLE[char1 as usize]);
     str.push(TABLE[char2 as usize]);
     str.push(TABLE[char3 as usize]);
     str.push(TABLE[char4 as usize]);
+    // TODO i don't know why but use ascii is slower
+    // str.push(u8_to_char(char1));
+    // str.push(u8_to_char(char2));
+    // str.push(u8_to_char(char3));
+    // str.push(u8_to_char(char4));
+}
+fn _u8_to_char(num:u8)->char{
+    match num {
+        0..=25 => (num + 0x41).into(),
+        26..=51 => (num + 71).into(),
+        52..=61 => (num - 4).into(),
+        62 => '+',
+        63 => '/',
+        _=>unreachable!()
+    }
 }
 
 #[cfg(test)]
