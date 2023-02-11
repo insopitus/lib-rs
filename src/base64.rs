@@ -50,6 +50,12 @@ pub fn base64_encode(buffer: &[u8]) -> String {
     String::from_utf8(output).expect("Invalid UTF-8")
 }
 
+enum Error{
+    InvalidLength,
+    UnexpectedCharacter(usize),
+}
+
+/// TODO add error types
 pub fn base64_decode(s: &str) -> Vec<u8> {
     let has_padding = s.ends_with('=');
     let s = s.as_bytes();
