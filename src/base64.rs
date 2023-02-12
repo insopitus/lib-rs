@@ -50,42 +50,45 @@ pub fn base64_encode(buffer: &[u8]) -> String {
     String::from_utf8(output).expect("Invalid UTF-8")
 }
 
-enum Error{
+#[derive(Debug,PartialEq,Eq)]
+pub enum Error {
     InvalidLength,
-    UnexpectedCharacter(usize),
+    UnexpectedCharacter,
 }
 
 /// TODO add error types
-pub fn base64_decode(s: &str) -> Vec<u8> {
-    let has_padding = s.ends_with('=');
+pub fn base64_decode(s: &str) -> Result<Vec<u8>, Error> {
     let s = s.as_bytes();
+    let has_padding = s.last() == Some(&PADDING);
     let in_len = s.len();
+    if in_len % 4 != 0 {return Err(Error::InvalidLength)}
     let mut output = Vec::with_capacity(in_len * 3);
     let slices = in_len / 4;
     let unpadding_slices = if has_padding { slices - 1 } else { slices };
     for i in 0..unpadding_slices {
-        decode_slice(&s[i * 4..=i * 4 + 3], &mut output);
+        decode_slice(&s[i * 4..=i * 4 + 3], &mut output)?;
     }
     // handle padding
     if has_padding {
         let slice = &s[in_len - 4..in_len];
-        let c1 = char_to_byte(slice[0]); //would never be '='
-        let c2 = char_to_byte(slice[1]); // would never be '='
+        let c1 = char_to_byte(slice[0])?; //would never be '='
+        let c2 = char_to_byte(slice[1])?; // would never be '='
         output.push(c1 << 2 | c2 >> 4);
         if slice[2] != PADDING {
-            let c3 = char_to_byte(slice[2]); // could be '='
+            let c3 = char_to_byte(slice[2])?; // could be '='
 
             output.push((c2 & 0b1111) << 4 | c3 >> 2);
             if slice[3] != PADDING {
-                let c4 = char_to_byte(slice[3]); // counld be '='
-    
+                let c4 = char_to_byte(slice[3])?; // counld be '='
+
                 output.push(c3 << 6 | c4);
             }
+        }else if slice[3]!=PADDING{
+            return Err(Error::UnexpectedCharacter);
         }
         // if slice[2] is padding slice[3] will always be padding
-        
     }
-    output
+    Ok(output)
 }
 
 /// panic if slice length isn't 3
@@ -109,19 +112,19 @@ fn encode_slice(slice: &[u8], output: &mut Vec<u8>) {
 }
 
 /// panic if slice length isn't 4
-fn decode_slice(bytes: &[u8], output: &mut Vec<u8>) {
-    let c1 = char_to_byte(bytes[0]);
-    let c2 = char_to_byte(bytes[1]);
-    let c3 = char_to_byte(bytes[2]);
-    let c4 = char_to_byte(bytes[3]);
+fn decode_slice(bytes: &[u8], output: &mut Vec<u8>)->Result<(),Error> {
+    let c1 = char_to_byte(bytes[0])?;
+    let c2 = char_to_byte(bytes[1])?;
+    let c3 = char_to_byte(bytes[2])?;
+    let c4 = char_to_byte(bytes[3])?;
     let a = c1 << 2 | c2 >> 4;
     let b = (c2 & 0b1111) << 4 | c3 >> 2;
     let c = c3 << 6 | c4;
     output.push(a);
     output.push(b);
     output.push(c);
+    Ok(())
 }
-fn decode_padding(bytes: &[u8], output: &mut Vec<u8>) {}
 
 // fn u8_to_char(num:u8)->char{
 //     match num {
@@ -134,14 +137,14 @@ fn decode_padding(bytes: &[u8], output: &mut Vec<u8>) {}
 //     }
 // }
 /// decode base64 char to byte
-fn char_to_byte(i: u8) -> u8 {
+fn char_to_byte(i: u8) -> Result<u8, Error> {
     match i {
-        b'A'..=b'Z' => i as u8 - 0x41,
-        b'a'..=b'z' => i as u8 - 71,
-        b'0'..=b'9' => i as u8 + 4,
-        b'+' => 62,
-        b'/' => 63,
-        _ => unreachable!(),
+        b'A'..=b'Z' => Ok(i as u8 - 0x41),
+        b'a'..=b'z' => Ok(i as u8 - 71),
+        b'0'..=b'9' => Ok(i as u8 + 4),
+        b'+' => Ok(62),
+        b'/' => Ok(63),
+        _ => Err(Error::UnexpectedCharacter),
     }
 }
 
@@ -157,18 +160,30 @@ mod test {
     fn padding_encode() {
         assert_eq!(base64_encode(b"abcd"), "YWJjZA==");
         assert_eq!(base64_encode(b"abcde"), "YWJjZGU=");
+        assert_eq!(base64_encode(b"ab"),"YWI=");
         assert_eq!(base64_encode(b"sageskjkbvnmiksjgtkgeskjgkgesGEKSAGNSGMSJKGKMVLKSJKGNKSNGLAJLKGHKSNKBAL;AJKKLGHSKNGALJHKNBZ.MOSGM.A.[91328I"),"c2FnZXNramtidm5taWtzamd0a2dlc2tqZ2tnZXNHRUtTQUdOU0dNU0pLR0tNVkxLU0pLR05LU05HTEFKTEtHSEtTTktCQUw7QUpLS0xHSFNLTkdBTEpIS05CWi5NT1NHTS5BLls5MTMyOEk=")
     }
 
     #[test]
     fn basic_decode() {
-        assert_eq!(base64_decode("YWJj"), b"abc");
-        assert_eq!(base64_decode("Z3NnY2Jpcm1zZGtnbWVy"), b"gsgcbirmsdkgmer");
+        assert_eq!(base64_decode("YWJj").unwrap(), b"abc");
+        assert_eq!(
+            base64_decode("Z3NnY2Jpcm1zZGtnbWVy").unwrap(),
+            b"gsgcbirmsdkgmer"
+        );
     }
     #[test]
     fn padding_decode() {
-        assert_eq!(base64_decode("YWJjZA=="), b"abcd");
-        assert_eq!(base64_decode("YWJjZGU="), b"abcde");
-        assert_eq!(base64_decode("c2FnZXNramtidm5taWtzamd0a2dlc2tqZ2tnZXNHRUtTQUdOU0dNU0pLR0tNVkxLU0pLR05LU05HTEFKTEtHSEtTTktCQUw7QUpLS0xHSFNLTkdBTEpIS05CWi5NT1NHTS5BLls5MTMyOEk="),b"sageskjkbvnmiksjgtkgeskjgkgesGEKSAGNSGMSJKGKMVLKSJKGNKSNGLAJLKGHKSNKBAL;AJKKLGHSKNGALJHKNBZ.MOSGM.A.[91328I")
+        assert_eq!(base64_decode("YWJjZA==").unwrap(), b"abcd");
+        assert_eq!(base64_decode("YWJjZGU=").unwrap(), b"abcde");
+        assert_eq!(base64_decode("YWI=").unwrap(),b"ab");
+        assert_eq!(base64_decode("c2FnZXNramtidm5taWtzamd0a2dlc2tqZ2tnZXNHRUtTQUdOU0dNU0pLR0tNVkxLU0pLR05LU05HTEFKTEtHSEtTTktCQUw7QUpLS0xHSFNLTkdBTEpIS05CWi5NT1NHTS5BLls5MTMyOEk=").unwrap(),b"sageskjkbvnmiksjgtkgeskjgkgesGEKSAGNSGMSJKGKMVLKSJKGNKSNGLAJLKGHKSNKBAL;AJKKLGHSKNGALJHKNBZ.MOSGM.A.[91328I")
+    }
+    #[test]
+    fn decode_error(){
+        assert_eq!(base64_decode("YWJjAC"),Err(Error::InvalidLength));
+        assert_eq!(base64_decode("afesgcERi==="),Err(Error::UnexpectedCharacter));
+        assert_eq!(base64_decode("af=sgcERid=="),Err(Error::UnexpectedCharacter));
+        assert_eq!(base64_decode("af=sgcERid=s"),Err(Error::UnexpectedCharacter));
     }
 }
