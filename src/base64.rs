@@ -10,7 +10,7 @@ const TABLE: [u8; 64] = [
 const PADDING: u8 = b'=';
 
 /// encode binary data to base64 string
-pub fn base64_encode(buffer: &[u8]) -> String {
+pub fn encode(buffer: &[u8]) -> String {
     let in_len = buffer.len();
     let out_len = (in_len + 2) / 3 * 4;
     let mut output = Vec::with_capacity(out_len);
@@ -58,7 +58,7 @@ pub enum Error {
 }
 
 /// decode a base64 string to binary data
-pub fn base64_decode(s: &str) -> Result<Vec<u8>, Error> {
+pub fn decode(s: &str) -> Result<Vec<u8>, Error> {
     let s = s.as_bytes();
     let has_padding = s.last() == Some(&PADDING);
     let in_len = s.len();
@@ -154,37 +154,37 @@ mod test {
     use super::*;
     #[test]
     fn basic_encode() {
-        assert_eq!(base64_encode(b"abc"), "YWJj");
-        assert_eq!(base64_encode(b"gsgcbirmsdkgmer"), "Z3NnY2Jpcm1zZGtnbWVy")
+        assert_eq!(encode(b"abc"), "YWJj");
+        assert_eq!(encode(b"gsgcbirmsdkgmer"), "Z3NnY2Jpcm1zZGtnbWVy")
     }
     #[test]
     fn padding_encode() {
-        assert_eq!(base64_encode(b"abcd"), "YWJjZA==");
-        assert_eq!(base64_encode(b"abcde"), "YWJjZGU=");
-        assert_eq!(base64_encode(b"ab"),"YWI=");
-        assert_eq!(base64_encode(b"sageskjkbvnmiksjgtkgeskjgkgesGEKSAGNSGMSJKGKMVLKSJKGNKSNGLAJLKGHKSNKBAL;AJKKLGHSKNGALJHKNBZ.MOSGM.A.[91328I"),"c2FnZXNramtidm5taWtzamd0a2dlc2tqZ2tnZXNHRUtTQUdOU0dNU0pLR0tNVkxLU0pLR05LU05HTEFKTEtHSEtTTktCQUw7QUpLS0xHSFNLTkdBTEpIS05CWi5NT1NHTS5BLls5MTMyOEk=")
+        assert_eq!(encode(b"abcd"), "YWJjZA==");
+        assert_eq!(encode(b"abcde"), "YWJjZGU=");
+        assert_eq!(encode(b"ab"),"YWI=");
+        assert_eq!(encode(b"sageskjkbvnmiksjgtkgeskjgkgesGEKSAGNSGMSJKGKMVLKSJKGNKSNGLAJLKGHKSNKBAL;AJKKLGHSKNGALJHKNBZ.MOSGM.A.[91328I"),"c2FnZXNramtidm5taWtzamd0a2dlc2tqZ2tnZXNHRUtTQUdOU0dNU0pLR0tNVkxLU0pLR05LU05HTEFKTEtHSEtTTktCQUw7QUpLS0xHSFNLTkdBTEpIS05CWi5NT1NHTS5BLls5MTMyOEk=")
     }
 
     #[test]
     fn basic_decode() {
-        assert_eq!(base64_decode("YWJj").unwrap(), b"abc");
+        assert_eq!(decode("YWJj").unwrap(), b"abc");
         assert_eq!(
-            base64_decode("Z3NnY2Jpcm1zZGtnbWVy").unwrap(),
+            decode("Z3NnY2Jpcm1zZGtnbWVy").unwrap(),
             b"gsgcbirmsdkgmer"
         );
     }
     #[test]
     fn padding_decode() {
-        assert_eq!(base64_decode("YWJjZA==").unwrap(), b"abcd");
-        assert_eq!(base64_decode("YWJjZGU=").unwrap(), b"abcde");
-        assert_eq!(base64_decode("YWI=").unwrap(),b"ab");
-        assert_eq!(base64_decode("c2FnZXNramtidm5taWtzamd0a2dlc2tqZ2tnZXNHRUtTQUdOU0dNU0pLR0tNVkxLU0pLR05LU05HTEFKTEtHSEtTTktCQUw7QUpLS0xHSFNLTkdBTEpIS05CWi5NT1NHTS5BLls5MTMyOEk=").unwrap(),b"sageskjkbvnmiksjgtkgeskjgkgesGEKSAGNSGMSJKGKMVLKSJKGNKSNGLAJLKGHKSNKBAL;AJKKLGHSKNGALJHKNBZ.MOSGM.A.[91328I")
+        assert_eq!(decode("YWJjZA==").unwrap(), b"abcd");
+        assert_eq!(decode("YWJjZGU=").unwrap(), b"abcde");
+        assert_eq!(decode("YWI=").unwrap(),b"ab");
+        assert_eq!(decode("c2FnZXNramtidm5taWtzamd0a2dlc2tqZ2tnZXNHRUtTQUdOU0dNU0pLR0tNVkxLU0pLR05LU05HTEFKTEtHSEtTTktCQUw7QUpLS0xHSFNLTkdBTEpIS05CWi5NT1NHTS5BLls5MTMyOEk=").unwrap(),b"sageskjkbvnmiksjgtkgeskjgkgesGEKSAGNSGMSJKGKMVLKSJKGNKSNGLAJLKGHKSNKBAL;AJKKLGHSKNGALJHKNBZ.MOSGM.A.[91328I")
     }
     #[test]
     fn decode_error(){
-        assert_eq!(base64_decode("YWJjAC"),Err(Error::InvalidLength));
-        assert_eq!(base64_decode("afesgcERi==="),Err(Error::UnexpectedCharacter));
-        assert_eq!(base64_decode("af=sgcERid=="),Err(Error::UnexpectedCharacter));
-        assert_eq!(base64_decode("af=sgcERid=s"),Err(Error::UnexpectedCharacter));
+        assert_eq!(decode("YWJjAC"),Err(Error::InvalidLength));
+        assert_eq!(decode("afesgcERi==="),Err(Error::UnexpectedCharacter));
+        assert_eq!(decode("af=sgcERid=="),Err(Error::UnexpectedCharacter));
+        assert_eq!(decode("af=sgcERid=s"),Err(Error::UnexpectedCharacter));
     }
 }
