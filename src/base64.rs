@@ -9,6 +9,7 @@ const TABLE: [u8; 64] = [
 ];
 const PADDING: u8 = b'=';
 
+/// encode binary data to base64 string
 pub fn base64_encode(buffer: &[u8]) -> String {
     let in_len = buffer.len();
     let out_len = (in_len + 2) / 3 * 4;
@@ -56,7 +57,7 @@ pub enum Error {
     UnexpectedCharacter,
 }
 
-/// TODO add error types
+/// decode a base64 string to binary data
 pub fn base64_decode(s: &str) -> Result<Vec<u8>, Error> {
     let s = s.as_bytes();
     let has_padding = s.last() == Some(&PADDING);
