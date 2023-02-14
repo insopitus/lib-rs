@@ -164,6 +164,10 @@ mod test {
         assert_eq!(encode(b"ab"),"YWI=");
         assert_eq!(encode(b"sageskjkbvnmiksjgtkgeskjgkgesGEKSAGNSGMSJKGKMVLKSJKGNKSNGLAJLKGHKSNKBAL;AJKKLGHSKNGALJHKNBZ.MOSGM.A.[91328I"),"c2FnZXNramtidm5taWtzamd0a2dlc2tqZ2tnZXNHRUtTQUdOU0dNU0pLR0tNVkxLU0pLR05LU05HTEFKTEtHSEtTTktCQUw7QUpLS0xHSFNLTkdBTEpIS05CWi5NT1NHTS5BLls5MTMyOEk=")
     }
+    #[test]
+    fn encode_empty(){
+        assert_eq!(encode(b""),"");
+    }
 
     #[test]
     fn basic_decode() {
@@ -186,5 +190,9 @@ mod test {
         assert_eq!(decode("afesgcERi==="),Err(Error::UnexpectedCharacter));
         assert_eq!(decode("af=sgcERid=="),Err(Error::UnexpectedCharacter));
         assert_eq!(decode("af=sgcERid=s"),Err(Error::UnexpectedCharacter));
+    }
+    #[test]
+    fn decode_empty(){
+        assert_eq!(decode("").unwrap(),b"");
     }
 }
