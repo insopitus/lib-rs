@@ -2,9 +2,9 @@ use std::ops::{Add, Mul};
 
 
 
-pub fn lerp<T>(a: T, b: T, t: f64) -> T
+pub fn lerp<T>(a: T, b: T, t: f32) -> T
 where
-    T: Add<T, Output = T> + Mul<f64, Output = T>,
+    T: Add<T, Output = T> + Mul<f32, Output = T>,
 {
     a * (1.0 - t) + b * t
 }
