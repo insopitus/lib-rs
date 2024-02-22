@@ -18,7 +18,7 @@ pub fn encode(buffer: &[u8]) -> String {
     let slices = in_len / 3;
 
     for i in 0..slices {
-        encode_slice(&buffer[i * 3..=i * 3 + 2], &mut output);
+        encode_slice(&buffer[i * 3..i * 3 + 3], &mut output);
     }
     // padding
     let remains = in_len % 3;
@@ -51,7 +51,7 @@ pub fn encode(buffer: &[u8]) -> String {
     String::from_utf8(output).expect("Invalid UTF-8")
 }
 
-#[derive(Debug,PartialEq,Eq)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum Error {
     InvalidLength,
     UnexpectedCharacter,
@@ -62,12 +62,14 @@ pub fn decode(s: &str) -> Result<Vec<u8>, Error> {
     let s = s.as_bytes();
     let has_padding = s.last() == Some(&PADDING);
     let in_len = s.len();
-    if in_len % 4 != 0 {return Err(Error::InvalidLength)}
+    if in_len % 4 != 0 {
+        return Err(Error::InvalidLength);
+    }
     let mut output = Vec::with_capacity(in_len * 3);
     let slices = in_len / 4;
     let unpadding_slices = if has_padding { slices - 1 } else { slices };
     for i in 0..unpadding_slices {
-        decode_slice(&s[i * 4..=i * 4 + 3], &mut output)?;
+        decode_slice(&s[i * 4..i * 4 + 4], &mut output)?;
     }
     // handle padding
     if has_padding {
@@ -84,7 +86,7 @@ pub fn decode(s: &str) -> Result<Vec<u8>, Error> {
 
                 output.push(c3 << 6 | c4);
             }
-        }else if slice[3]!=PADDING{
+        } else if slice[3] != PADDING {
             return Err(Error::UnexpectedCharacter);
         }
         // if slice[2] is padding slice[3] will always be padding
@@ -113,7 +115,7 @@ fn encode_slice(slice: &[u8], output: &mut Vec<u8>) {
 }
 
 /// panic if slice length isn't 4
-fn decode_slice(bytes: &[u8], output: &mut Vec<u8>)->Result<(),Error> {
+fn decode_slice(bytes: &[u8], output: &mut Vec<u8>) -> Result<(), Error> {
     let c1 = char_to_byte(bytes[0])?;
     let c2 = char_to_byte(bytes[1])?;
     let c3 = char_to_byte(bytes[2])?;
@@ -161,38 +163,35 @@ mod test {
     fn padding_encode() {
         assert_eq!(encode(b"abcd"), "YWJjZA==");
         assert_eq!(encode(b"abcde"), "YWJjZGU=");
-        assert_eq!(encode(b"ab"),"YWI=");
+        assert_eq!(encode(b"ab"), "YWI=");
         assert_eq!(encode(b"sageskjkbvnmiksjgtkgeskjgkgesGEKSAGNSGMSJKGKMVLKSJKGNKSNGLAJLKGHKSNKBAL;AJKKLGHSKNGALJHKNBZ.MOSGM.A.[91328I"),"c2FnZXNramtidm5taWtzamd0a2dlc2tqZ2tnZXNHRUtTQUdOU0dNU0pLR0tNVkxLU0pLR05LU05HTEFKTEtHSEtTTktCQUw7QUpLS0xHSFNLTkdBTEpIS05CWi5NT1NHTS5BLls5MTMyOEk=")
     }
     #[test]
-    fn encode_empty(){
-        assert_eq!(encode(b""),"");
+    fn encode_empty() {
+        assert_eq!(encode(b""), "");
     }
 
     #[test]
     fn basic_decode() {
         assert_eq!(decode("YWJj").unwrap(), b"abc");
-        assert_eq!(
-            decode("Z3NnY2Jpcm1zZGtnbWVy").unwrap(),
-            b"gsgcbirmsdkgmer"
-        );
+        assert_eq!(decode("Z3NnY2Jpcm1zZGtnbWVy").unwrap(), b"gsgcbirmsdkgmer");
     }
     #[test]
     fn padding_decode() {
         assert_eq!(decode("YWJjZA==").unwrap(), b"abcd");
         assert_eq!(decode("YWJjZGU=").unwrap(), b"abcde");
-        assert_eq!(decode("YWI=").unwrap(),b"ab");
+        assert_eq!(decode("YWI=").unwrap(), b"ab");
         assert_eq!(decode("c2FnZXNramtidm5taWtzamd0a2dlc2tqZ2tnZXNHRUtTQUdOU0dNU0pLR0tNVkxLU0pLR05LU05HTEFKTEtHSEtTTktCQUw7QUpLS0xHSFNLTkdBTEpIS05CWi5NT1NHTS5BLls5MTMyOEk=").unwrap(),b"sageskjkbvnmiksjgtkgeskjgkgesGEKSAGNSGMSJKGKMVLKSJKGNKSNGLAJLKGHKSNKBAL;AJKKLGHSKNGALJHKNBZ.MOSGM.A.[91328I")
     }
     #[test]
-    fn decode_error(){
-        assert_eq!(decode("YWJjAC"),Err(Error::InvalidLength));
-        assert_eq!(decode("afesgcERi==="),Err(Error::UnexpectedCharacter));
-        assert_eq!(decode("af=sgcERid=="),Err(Error::UnexpectedCharacter));
-        assert_eq!(decode("af=sgcERid=s"),Err(Error::UnexpectedCharacter));
+    fn decode_error() {
+        assert_eq!(decode("YWJjAC"), Err(Error::InvalidLength));
+        assert_eq!(decode("afesgcERi==="), Err(Error::UnexpectedCharacter));
+        assert_eq!(decode("af=sgcERid=="), Err(Error::UnexpectedCharacter));
+        assert_eq!(decode("af=sgcERid=s"), Err(Error::UnexpectedCharacter));
     }
     #[test]
-    fn decode_empty(){
-        assert_eq!(decode("").unwrap(),b"");
+    fn decode_empty() {
+        assert_eq!(decode("").unwrap(), b"");
     }
 }
