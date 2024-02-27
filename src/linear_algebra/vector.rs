@@ -4,6 +4,10 @@ pub struct Vector2 {
     pub y: f32,
 }
 
+pub fn vec3(x:f32,y:f32,z:f32)->Vector3 {
+    Vector3::new(x,y,z)
+}
+
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub struct Vector3 {
     pub x: f32,
@@ -74,6 +78,16 @@ impl std::ops::Mul<f32> for Vector3 {
             x: self.x * rhs,
             y: self.y * rhs,
             z: self.z * rhs,
+        }
+    }
+}
+impl std::ops::Mul<Vector3> for f32 {
+    type Output = Vector3;
+    fn mul(self, rhs: Vector3) -> Self::Output {
+        Self::Output {
+            x: rhs.x * self,
+            y: rhs.y * self,
+            z: rhs.z * self,
         }
     }
 }

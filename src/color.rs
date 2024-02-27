@@ -12,11 +12,31 @@ pub struct Color {
 }
 
 impl Color {
-    fn from_rgba(r: u8, g: u8, b: u8, a: u8) -> Self {
-        todo!()
+    pub fn from_rgba(r: u8, g: u8, b: u8, a: u8) -> Self {
+        Self {
+            r: r as f32 / 255.0,
+            g: g as f32 / 255.0,
+            b: b as f32 / 255.0,
+            a: a as f32 / 255.0,
+        }
     }
-    fn from_rgba_array(arr: &[u8; 4]) -> Self {
-        todo!()
+    // fn from_rgba_array(arr: &[u8; 4]) -> Self {
+    //     todo!()
+    // }
+    pub fn as_rgb_bytes(&self) -> [u8; 3] {
+        [
+            (self.r * 255.0) as u8,
+            (self.g * 255.0) as u8,
+            (self.b * 255.0) as u8,
+        ]
+    }
+    pub fn as_rgba8_bytes(&self) -> [u8; 4] {
+        [
+            (self.r * 255.0) as u8,
+            (self.g * 255.0) as u8,
+            (self.b * 255.0) as u8,
+            (self.a * 255.0) as u8,
+        ]
     }
 }
 impl FromStr for Color {

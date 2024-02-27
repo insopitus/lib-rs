@@ -6,3 +6,4 @@ pub mod linked_list;
 pub mod radian;
 pub mod semantic_version;
 pub mod interpolate;
+pub mod ray;
