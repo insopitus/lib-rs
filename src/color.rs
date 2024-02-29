@@ -11,6 +11,13 @@ pub struct Color {
     pub a: f32,
 }
 
+pub fn rgba(r: f32, g: f32, b: f32, a: f32) -> Color {
+    Color { r, g, b, a }
+}
+pub fn rgba8(r: u8, g: u8, b: u8, a: u8) -> Color {
+    Color::from_rgba(r, g, b, a)
+}
+
 impl Color {
     pub fn from_rgba(r: u8, g: u8, b: u8, a: u8) -> Self {
         Self {
