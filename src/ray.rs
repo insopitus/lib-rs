@@ -1,10 +1,13 @@
+
+use std::ops::Range;
+
 use crate::{
     geometry::Sphere,
     linear_algebra::{vector::dot, Vector3},
 };
 
 pub trait Hitable {
-    fn hit(&self, ray: Ray, min_t: f32, max_t: f32) -> Option<HitRecord>;
+    fn hit(&self, ray: Ray, range:Range<f32>) -> Option<HitRecord>;
 }
 
 #[derive(Clone, Copy)]
@@ -38,7 +41,7 @@ impl Ray {
         self.origin + distance * self.direction
     }
 
-    pub fn hit(&self, target: impl Hitable, min_t: f32, max_t: f32) -> Option<HitRecord> {
-        target.hit(*self, min_t, max_t)
+    pub fn hit(&self, target: impl Hitable, range:Range<f32>) -> Option<HitRecord> {
+        target.hit(*self, range)
     }
 }
