@@ -56,6 +56,10 @@ impl Vector3 {
             z: self.z / len,
         }
     }
+    /// reflect direction of self, unnormalized
+    pub fn reflect(&self, normal: Vector3) -> Self {
+        *self - 2.0 * dot(*self, normal) * normal
+    }
     pub const ZERO: Vector3 = Self {
         x: 0.0,
         y: 0.0,

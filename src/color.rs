@@ -1,9 +1,11 @@
 use std::{
-    ops::{Add, Mul},
+    iter::Sum,
+    ops::{Add, AddAssign, DivAssign, Mul},
     str::FromStr,
 };
 
 /// Color for GPU rendering and game development
+#[derive(Clone, Copy)]
 pub struct Color {
     pub r: f32,
     pub g: f32,
@@ -16,6 +18,10 @@ pub fn rgba(r: f32, g: f32, b: f32, a: f32) -> Color {
 }
 pub fn rgba8(r: u8, g: u8, b: u8, a: u8) -> Color {
     Color::from_rgba(r, g, b, a)
+}
+
+pub fn mix(c1: Color, c2: Color, alpha: f32) -> Color {
+    c1 * (1.0 - alpha) + c2 * alpha
 }
 
 impl Color {
@@ -44,6 +50,14 @@ impl Color {
             (self.b * 255.0) as u8,
             (self.a * 255.0) as u8,
         ]
+    }
+    pub fn linear_to_gamma(&self, gamma: f32) -> Self {
+        Self {
+            r: self.r.powf(1.0 / gamma),
+            g: self.g.powf(1.0 / gamma),
+            b: self.b.powf(1.0 / gamma),
+            a: self.a.powf(1.0 / gamma),
+        }
     }
 }
 impl FromStr for Color {
@@ -81,6 +95,40 @@ impl Mul<Color> for Color {
             b: self.b * rhs.b,
             a: self.a * rhs.a,
         }
+    }
+}
+impl Mul<f32> for Color {
+    type Output = Color;
+
+    fn mul(self, rhs: f32) -> Self::Output {
+        Self::Output {
+            r: self.r * rhs,
+            g: self.g * rhs,
+            b: self.b * rhs,
+            a: self.a * rhs,
+        }
+    }
+}
+impl AddAssign<Color> for Color {
+    fn add_assign(&mut self, rhs: Color) {
+        self.a += rhs.a;
+        self.r += rhs.r;
+        self.b += rhs.b;
+        self.g += rhs.g;
+    }
+}
+impl DivAssign<f32> for Color {
+    fn div_assign(&mut self, rhs: f32) {
+        self.a /= rhs;
+        self.r /= rhs;
+        self.b /= rhs;
+        self.g /= rhs;
+    }
+}
+
+impl Sum for Color {
+    fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
+        iter.fold(rgba(0.0, 0.0, 0.0, 0.0), |a, b| a + b)
     }
 }
 

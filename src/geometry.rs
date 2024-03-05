@@ -27,6 +27,7 @@ impl Hitable for Sphere {
             let sqrtd = discriminant.sqrt();
             // find the nearest root that lies in the acceptable range
             let mut root = (-half_b - sqrtd) / a;
+
             if root <= min_t || root >= max_t {
                 root = (-half_b - sqrtd) / a;
                 if root <= min_t || root >= max_t {
