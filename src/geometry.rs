@@ -1,3 +1,5 @@
+use std::ops::Range;
+
 use crate::{
     linear_algebra::{vector::dot, Vector3},
     ray::{HitRecord, Hitable},
@@ -15,7 +17,7 @@ impl Sphere {
 }
 
 impl Hitable for Sphere {
-    fn hit(&self, ray: crate::ray::Ray, min_t: f32, max_t: f32) -> Option<HitRecord> {
+    fn hit(&self, ray: crate::ray::Ray, range: Range<f32>) -> Option<HitRecord> {
         let oc = ray.origin - self.center;
         let a = ray.direction.length_squared();
         let half_b = dot(oc, ray.direction);
@@ -27,13 +29,13 @@ impl Hitable for Sphere {
             let sqrtd = discriminant.sqrt();
             // find the nearest root that lies in the acceptable range
             let mut root = (-half_b - sqrtd) / a;
-
-            if root <= min_t || root >= max_t {
+            if !range.contains(&root) {
                 root = (-half_b - sqrtd) / a;
-                if root <= min_t || root >= max_t {
+                if !range.contains(&root) {
                     return None;
                 }
             }
+
             let t = root;
             let p = ray.at(t);
             let mut record = HitRecord {
