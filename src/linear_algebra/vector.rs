@@ -60,6 +60,12 @@ impl Vector3 {
     pub fn reflect(&self, normal: Vector3) -> Self {
         *self - 2.0 * dot(*self, normal) * normal
     }
+    pub fn refract(&self, normal: Vector3, etai_over_itat: f32) -> Self {
+        let cos_theta = dot(-*self, normal).min(1.0);
+        let r_out_perp = (*self + normal * cos_theta) * etai_over_itat;
+        let r_out_parallel = -(1.0 - r_out_perp.length_squared()).abs().sqrt() * normal;
+        r_out_parallel + r_out_perp
+    }
     pub const ZERO: Vector3 = Self {
         x: 0.0,
         y: 0.0,

@@ -66,10 +66,10 @@ impl Hitable for AxisAlignedBox {
     fn hit(&self, ray: crate::ray::Ray, range: Range<f32>) -> Option<HitRecord> {
         let mut t_min = 0.0;
         let mut t_max = f32::INFINITY;
-        let ray_dir = [ray.direction.x,ray.direction.y,ray.direction.z];
-        let ray_origin = [ray.origin.x,ray.origin.y,ray.origin.z];
-        let min = [self.min.x,self.min.y,self.min.z];
-        let max = [self.max.x,self.max.y,self.max.z];
+        let ray_dir = [ray.direction.x, ray.direction.y, ray.direction.z];
+        let ray_origin = [ray.origin.x, ray.origin.y, ray.origin.z];
+        let min = [self.min.x, self.min.y, self.min.z];
+        let max = [self.max.x, self.max.y, self.max.z];
         for i in 0..3 {
             let inv_d = 1.0 / ray_dir[i];
             let mut t0 = (min[i] - ray_origin[i]) * inv_d;
@@ -92,12 +92,22 @@ impl Hitable for AxisAlignedBox {
             let outward_normal = if t_min == t_max {
                 // 边界情况，选择一个合适的法向量
                 let mut normal = Vector3::ZERO;
-                if hit_point.x == self.min.x { normal.x = -1.0; }
-                else if hit_point.x == self.max.x { normal.x = 1.0; }
-                if hit_point.y == self.min.y { normal.y = -1.0; }
-                else if hit_point.y == self.max.y { normal.y = 1.0; }
-                if hit_point.z == self.min.z { normal.z = -1.0; }
-                else if hit_point.z == self.max.z { normal.z = 1.0; }
+                if hit_point.x == self.min.x {
+                    normal.x = -1.0;
+                } else if hit_point.x == self.max.x {
+                    normal.x = 1.0;
+                }
+                if hit_point.y == self.min.y {
+                    normal.y = -1.0;
+                } else if hit_point.y == self.max.y {
+                    normal.y = 1.0;
+                }
+                if hit_point.z == self.min.z {
+                    normal.z = -1.0;
+                } else if hit_point.z == self.max.z {
+                    normal.z = 1.0;
+                }
+                dbg!(normal);
                 normal.normalize()
             } else {
                 // 对于内部点，可以通过hit_point和盒子中心计算法向量
