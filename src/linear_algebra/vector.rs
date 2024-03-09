@@ -56,13 +56,19 @@ impl Vector3 {
             z: self.z / len,
         }
     }
-    /// reflect direction of self, unnormalized
-    pub fn reflect(&self, normal: Vector3) -> Self {
-        *self - 2.0 * dot(*self, normal) * normal
+    pub fn min(&self, rhs:Self)->Self{
+        Self { x: self.x.min(rhs.x), y: self.y.min(rhs.y), z: self.z.min(rhs.z) }
     }
-    pub fn refract(&self, normal: Vector3, etai_over_itat: f32) -> Self {
-        let cos_theta = dot(-*self, normal).min(1.0);
-        let r_out_perp = (*self + normal * cos_theta) * etai_over_itat;
+    pub fn max(&self, rhs:Self)->Self{
+        Self { x: self.x.max(rhs.x), y: self.y.max(rhs.y), z: self.z.max(rhs.z) }
+    }
+    /// reflect direction of self, unnormalized
+    pub fn reflect(self, normal: Vector3) -> Self {
+        self - 2.0 * dot(self, normal) * normal
+    }
+    pub fn refract(self, normal: Vector3, refract_rate: f32) -> Self {
+        let cos_theta = dot(-self, normal).min(1.0);
+        let r_out_perp = (self + normal * cos_theta) * refract_rate;
         let r_out_parallel = -(1.0 - r_out_perp.length_squared()).abs().sqrt() * normal;
         r_out_parallel + r_out_perp
     }
@@ -155,6 +161,17 @@ impl std::ops::Div<f32> for Vector3 {
             x: self.x / rhs,
             y: self.y / rhs,
             z: self.z / rhs,
+        }
+    }
+}
+impl std::ops::Div<Self> for Vector3 {
+    type Output = Vector3;
+
+    fn div(self, rhs: Vector3) -> Self::Output {
+        Self::Output {
+            x: self.x / rhs.x,
+            y: self.y / rhs.y,
+            z: self.z / rhs.z,
         }
     }
 }
