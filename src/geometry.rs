@@ -161,7 +161,7 @@ impl Hitable for AxisAlignedBox {
     //     }
     // }
 }
-
+/// https://raytracing.github.io/books/RayTracingTheNextWeek.html#quadrilaterals/definingthequadrilateral
 #[derive(Clone, Copy)]
 pub struct Parallelogram {
     pub corner: Vector3,
