@@ -161,3 +161,10 @@ impl Hitable for AxisAlignedBox {
     //     }
     // }
 }
+
+#[derive(Clone, Copy)]
+pub struct Parallelogram {
+    pub corner: Vector3,
+    pub u: Vector3,
+    pub v: Vector3,
+}
