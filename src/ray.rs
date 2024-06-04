@@ -15,6 +15,8 @@ pub struct HitRecord {
     pub normal: Vector3,
     pub t: f32,
     pub front_face: bool,
+    pub u:f32,
+    pub v:f32,
 }
 impl HitRecord {
     pub fn set_face_normal(&mut self, ray: &Ray, outward_normal: Vector3) {

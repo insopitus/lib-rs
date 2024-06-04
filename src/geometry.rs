@@ -1,7 +1,10 @@
 use std::ops::Range;
 
 use crate::{
-    linear_algebra::{vector::dot, Vector3},
+    linear_algebra::{
+        vector::{cross, dot},
+        Vector3,
+    },
     ray::{HitRecord, Hitable},
 };
 
@@ -43,6 +46,8 @@ impl Hitable for Sphere {
                 normal: Vector3::ZERO,
                 t,
                 front_face: false,
+                u:0.0,
+                v:0.0,
             };
             let outward_normal = (p - self.center) / self.radius;
             record.set_face_normal(&ray, outward_normal);
@@ -96,6 +101,8 @@ impl Hitable for AxisAlignedBox {
                 normal,
                 t: t_near,
                 front_face: true,
+                u:0.0,
+                v:0.0,
             })
         }
     }
@@ -164,7 +171,90 @@ impl Hitable for AxisAlignedBox {
 /// https://raytracing.github.io/books/RayTracingTheNextWeek.html#quadrilaterals/definingthequadrilateral
 #[derive(Clone, Copy)]
 pub struct Parallelogram {
-    pub corner: Vector3,
-    pub u: Vector3,
-    pub v: Vector3,
+    /// a corner of the parallelogram
+    q: Vector3,
+    /// a vector on the edge from the corner q
+    u: Vector3,
+    /// a vector on the other edge from the corner q
+    v: Vector3,
+    // normal of the parallelogram
+    n: Vector3,
+    // D of the plane equation Ax+By+C=D
+    d: f32,
+    // n / n · n
+    w: Vector3,
+}
+impl Parallelogram {
+    pub fn new(q: Vector3, u: Vector3, v: Vector3) -> Self {
+        let n = cross(u, v).normalize();
+        let d = dot(n, q);
+        let w = n / dot(n,n);
+        Self { q, u, v, n, d,w }
+    }
+}
+impl Hitable for Parallelogram {
+    fn hit(&self, ray: crate::ray::Ray, range: Range<f32>) -> Option<HitRecord> {
+        let denom = dot(self.n,ray.direction);
+        // no hit if the ray is parallel to the plane
+        if denom.abs() < 1e-8{
+            return None;
+        }
+        // return None if the hit point t is outside the range
+        let t = (self.d - dot(self.n,ray.origin)) / denom;
+        if !range.contains(&t){
+            return None;
+        }
+        // determin the hit point lies within the parallogram using
+        // its plane coordinates(uv)
+        let intersection = ray.at(t);
+        let planar_hitpt_vector = intersection - self.q;
+        let alpha = dot(self.w,cross(planar_hitpt_vector,self.v));
+        let beta = dot(self.w,cross(self.u,planar_hitpt_vector));
+        if alpha > 1.0 || alpha < 0.0 || beta > 1.0 || beta < 0.0 {
+            return None;
+        }
+        let mut rec = HitRecord{
+            point: intersection,
+            normal: self.n,
+            t,
+            front_face: true,
+            u:alpha,
+            v:beta,
+        };
+        rec.set_face_normal(&ray, self.n);
+        Some(rec)
+
+    }
+}
+
+#[derive(Clone, Copy)]
+pub struct Plane {
+    /// a random point on the plane
+    pub point: Vector3,
+    /// normal of the plane, supposed to be normlized
+    pub normal: Vector3,
+}
+impl Hitable for Plane {
+    fn hit(&self, ray: crate::ray::Ray, range: Range<f32>) -> Option<HitRecord> {
+        todo!()
+        // let denom = dot(self.normal,ray.direction);
+        // // no hit if the ray is parallel to the plane
+        // if denom.abs() < 1e-8{
+        //     return None;
+        // }
+        // // return None if the hit point t is outside the range
+        // let t = (self.d - dot(self.normal,ray.origin)) / denom;
+        // if !range.contains(&t){
+        //     return None;
+        // }
+        // let intersection = ray.at(t);
+        // let mut rec = HitRecord{
+        //     point: intersection,
+        //     normal: self.normal,
+        //     t,
+        //     front_face: true,
+        // };
+        // rec.set_face_normal(&ray, self.n);
+        // Some(rec)
+    }
 }
