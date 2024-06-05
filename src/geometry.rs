@@ -186,10 +186,11 @@ pub struct Parallelogram {
 }
 impl Parallelogram {
     pub fn new(q: Vector3, u: Vector3, v: Vector3) -> Self {
-        let n = cross(u, v).normalize();
-        let d = dot(n, q);
+        let n = cross(u, v);
+        let normal: Vector3 = n.normalize();
+        let d = dot(normal, q);
         let w = n / dot(n,n);
-        Self { q, u, v, n, d,w }
+        Self { q, u, v, n:normal, d,w }
     }
 }
 impl Hitable for Parallelogram {
@@ -199,8 +200,8 @@ impl Hitable for Parallelogram {
         if denom.abs() < 1e-8{
             return None;
         }
-        // return None if the hit point t is outside the range
         let t = (self.d - dot(self.n,ray.origin)) / denom;
+        // return None if the hit point t is outside the range
         if !range.contains(&t){
             return None;
         }

@@ -9,7 +9,7 @@ pub trait Hitable {
     fn hit(&self, ray: Ray, range: Range<f32>) -> Option<HitRecord>;
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy,Debug)]
 pub struct HitRecord {
     pub point: Vector3,
     pub normal: Vector3,
