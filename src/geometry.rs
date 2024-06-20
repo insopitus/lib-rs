@@ -259,3 +259,11 @@ impl Hitable for Plane {
         // Some(rec)
     }
 }
+
+
+pub struct TriMesh{
+    vertices:Vec<Vector3>,
+    indices:Vec<usize>
+}
+
+
