@@ -1,11 +1,10 @@
 use std::ops::Range;
 
 use crate::{
-    linear_algebra::{
+    aabb::Aabb, data_structures, linear_algebra::{
         vector::{cross, dot},
         Vector3,
-    },
-    ray::{HitRecord, Hitable},
+    }, ray::{HitRecord, Hitable}
 };
 
 #[derive(Clone, Copy)]
@@ -260,10 +259,56 @@ impl Hitable for Plane {
     }
 }
 
+pub struct Triangle{
+    vertices:[Vector3;3]
+}
 
 pub struct TriMesh{
     vertices:Vec<Vector3>,
     indices:Vec<usize>
 }
 
+impl TriMesh{
+    pub fn new(vertices:Vec<Vector3>,indices:Vec<usize>)->Self{
+        Self { vertices, indices }
+    }
+    pub fn validate(&self)->Result<(),&'static str>{
+        if self.indices.len() % 3 != 0{
+            return Err("invalid indices count")
+        }
+        let vert_len = self.vertices.len()-1;
+        // indices in bound
+        for i in &self.indices{
+            if *i > vert_len{
+                return Err("indice out of bound");
+            }
+        }
 
+        return Ok(())
+    }
+}
+
+pub struct Bvh{
+    tree: data_structures::binary_tree::Node<BvhNode>
+}
+struct BvhNode{
+    volume:Aabb,
+    triangles:Vec<Triangle>
+}
+
+impl Bvh{
+    pub fn from_trimesh(mesh:&TriMesh)->Self{
+        let mut aabb = Aabb::new();
+        for p in &mesh.vertices{
+            aabb.expand_by_point(*p);
+        }
+        let mut triangles:Vec<Triangle> = Vec::with_capacity(mesh.indices.len()/3);
+        for i in 0..mesh.indices.len()/3{
+            triangles.push(Triangle{
+                vertices: [mesh.vertices[i*3],mesh.vertices[i*3+1],mesh.vertices[i*3+2]],
+            });
+        }
+
+        todo!()
+    }
+}
