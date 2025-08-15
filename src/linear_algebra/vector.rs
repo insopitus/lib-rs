@@ -6,6 +6,148 @@ pub struct Vector2 {
     pub y: f32,
 }
 
+pub fn vec2(x:f32,y:f32)->Vector2{
+    Vector2::new(x,y)
+}
+
+impl Vector2 {
+    pub fn new(x: f32, y: f32) -> Self {
+        Self { x, y, }
+    }
+    pub fn distance_to(&self, v: &Vector2) -> f32 {
+        self.distance_to_squared(v).sqrt()
+    }
+    pub fn distance_to_squared(&self, v: &Vector2) -> f32 {
+        (self.x - v.x).powf(2.0) + (self.y - v.y).powf(2.0)
+    }
+    pub fn length(&self) -> f32 {
+        self.length_squared().sqrt()
+    }
+    pub fn length_squared(&self) -> f32 {
+        self.x * self.x + self.y * self.y
+    }
+
+    /// return a normalized version of this vector
+    pub fn normalize(&self) -> Self {
+        let len = self.length();
+        Self {
+            x: self.x / len,
+            y: self.y / len,
+        }
+    }
+    pub fn min(&self, rhs:Self)->Self{
+        Self { x: self.x.min(rhs.x), y: self.y.min(rhs.y)  }
+    }
+    pub fn max(&self, rhs:Self)->Self{
+        Self { x: self.x.max(rhs.x), y: self.y.max(rhs.y) }
+    }
+    /// reflect direction of self, unnormalized
+    pub fn reflect(self, normal: Vector2) -> Self {
+        self - 2.0 * dot(self, normal) * normal
+    }
+    pub fn refract(self, normal: Vector2, refract_rate: f32) -> Self {
+        let cos_theta = dot(-self, normal).min(1.0);
+        let r_out_perp = (self + normal * cos_theta) * refract_rate;
+        let r_out_parallel = -(1.0 - r_out_perp.length_squared()).abs().sqrt() * normal;
+        r_out_parallel + r_out_perp
+    }
+    pub const ZERO: Vector2 = Self {
+        x: 0.0,
+        y: 0.0,
+    };
+    pub const UNIT_X: Vector2 = Self {
+        x: 1.0,
+        y: 0.0,
+    };
+    pub const UNIT_Y: Vector2 = Self {
+        x: 0.0,
+        y: 1.0,
+    };
+  
+}
+impl DotProduct for Vector2{
+    fn dot(&self, rhs: Self) -> f32 {
+        self.x*rhs.x+self.y+rhs.y
+    }
+}
+impl std::ops::Add for Vector2 {
+    type Output = Vector2;
+
+    fn add(self, rhs: Self) -> Self::Output {
+        Vector2 {
+            x: self.x + rhs.x,
+            y: self.y + rhs.y,
+        }
+    }
+}
+
+impl std::ops::Sub for Vector2 {
+    type Output = Vector2;
+
+    fn sub(self, rhs: Self) -> Self::Output {
+        Vector2 {
+            x: self.x - rhs.x,
+            y: self.y - rhs.y,
+        }
+    }
+}
+
+impl std::ops::Mul<f32> for Vector2 {
+    type Output = Self;
+    fn mul(self, rhs: f32) -> Self::Output {
+        Self {
+            x: self.x * rhs,
+            y: self.y * rhs,
+        }
+    }
+}
+impl std::ops::Mul<Vector2> for f32 {
+    type Output = Vector2;
+    fn mul(self, rhs: Vector2) -> Self::Output {
+        Self::Output {
+            x: rhs.x * self,
+            y: rhs.y * self,
+        }
+    }
+}
+impl std::ops::Div<f32> for Vector2 {
+    type Output = Vector2;
+
+    fn div(self, rhs: f32) -> Self::Output {
+        Self::Output {
+            x: self.x / rhs,
+            y: self.y / rhs,
+        }
+    }
+}
+impl std::ops::Div<Self> for Vector2 {
+    type Output = Vector2;
+
+    fn div(self, rhs: Vector2) -> Self::Output {
+        Self::Output {
+            x: self.x / rhs.x,
+            y: self.y / rhs.y,
+        }
+    }
+}
+
+impl std::ops::Neg for Vector2 {
+    type Output = Self;
+
+    fn neg(self) -> Self::Output {
+        self * -1.0
+    }
+}
+impl Sum for Vector2{
+    fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
+        let mut result = vec2(0.0, 0.0,);
+        for i in iter{
+            result=result+i;
+        }
+        return result;
+    }
+}
+
 pub fn vec3(x: f32, y: f32, z: f32) -> Vector3 {
     Vector3::new(x, y, z)
 }
