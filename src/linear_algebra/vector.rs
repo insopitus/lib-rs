@@ -1,3 +1,5 @@
+use std::iter::Sum;
+
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub struct Vector2 {
     pub x: f32,
@@ -164,6 +166,15 @@ impl std::ops::Neg for Vector3 {
 
     fn neg(self) -> Self::Output {
         self * -1.0
+    }
+}
+impl Sum for Vector3{
+    fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
+        let mut result = vec3(0.0, 0.0, 0.0);
+        for i in iter{
+            result=result+i;
+        }
+        return result;
     }
 }
 
