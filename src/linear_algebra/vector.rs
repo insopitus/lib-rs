@@ -1,4 +1,4 @@
-use std::iter::Sum;
+use std::{f32::EPSILON, iter::Sum};
 
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub struct Vector2 {
@@ -6,19 +6,21 @@ pub struct Vector2 {
     pub y: f32,
 }
 
-pub fn vec2(x:f32,y:f32)->Vector2{
-    Vector2::new(x,y)
+pub fn vec2(x: f32, y: f32) -> Vector2 {
+    Vector2::new(x, y)
 }
 
 impl Vector2 {
     pub fn new(x: f32, y: f32) -> Self {
-        Self { x, y, }
+        Self { x, y }
     }
     pub fn distance_to(&self, v: &Vector2) -> f32 {
         self.distance_to_squared(v).sqrt()
     }
     pub fn distance_to_squared(&self, v: &Vector2) -> f32 {
-        (self.x - v.x).powf(2.0) + (self.y - v.y).powf(2.0)
+        let dx = self.x-v.x;
+        let dy = self.y-v.y;
+        dx*dx+dy*dy
     }
     pub fn length(&self) -> f32 {
         self.length_squared().sqrt()
@@ -35,11 +37,28 @@ impl Vector2 {
             y: self.y / len,
         }
     }
-    pub fn min(&self, rhs:Self)->Self{
-        Self { x: self.x.min(rhs.x), y: self.y.min(rhs.y)  }
+    pub fn normalize_or_zero(&self) -> Self {
+        let len = self.length();
+        if len.abs() < EPSILON {
+            Self { x: 0.0, y: 0.0 }
+        } else {
+            Self {
+                x: self.x / len,
+                y: self.y / len,
+            }
+        }
     }
-    pub fn max(&self, rhs:Self)->Self{
-        Self { x: self.x.max(rhs.x), y: self.y.max(rhs.y) }
+    pub fn min(&self, rhs: Self) -> Self {
+        Self {
+            x: self.x.min(rhs.x),
+            y: self.y.min(rhs.y),
+        }
+    }
+    pub fn max(&self, rhs: Self) -> Self {
+        Self {
+            x: self.x.max(rhs.x),
+            y: self.y.max(rhs.y),
+        }
     }
     /// reflect direction of self, unnormalized
     pub fn reflect(self, normal: Vector2) -> Self {
@@ -51,23 +70,13 @@ impl Vector2 {
         let r_out_parallel = -(1.0 - r_out_perp.length_squared()).abs().sqrt() * normal;
         r_out_parallel + r_out_perp
     }
-    pub const ZERO: Vector2 = Self {
-        x: 0.0,
-        y: 0.0,
-    };
-    pub const UNIT_X: Vector2 = Self {
-        x: 1.0,
-        y: 0.0,
-    };
-    pub const UNIT_Y: Vector2 = Self {
-        x: 0.0,
-        y: 1.0,
-    };
-  
+    pub const ZERO: Vector2 = Self { x: 0.0, y: 0.0 };
+    pub const UNIT_X: Vector2 = Self { x: 1.0, y: 0.0 };
+    pub const UNIT_Y: Vector2 = Self { x: 0.0, y: 1.0 };
 }
-impl DotProduct for Vector2{
+impl DotProduct for Vector2 {
     fn dot(&self, rhs: Self) -> f32 {
-        self.x*rhs.x+self.y+rhs.y
+        self.x * rhs.x + self.y + rhs.y
     }
 }
 impl std::ops::Add for Vector2 {
@@ -138,13 +147,26 @@ impl std::ops::Neg for Vector2 {
         self * -1.0
     }
 }
-impl Sum for Vector2{
+impl Sum for Vector2 {
     fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
-        let mut result = vec2(0.0, 0.0,);
-        for i in iter{
-            result=result+i;
+        let mut result = vec2(0.0, 0.0);
+        for i in iter {
+            result = result + i;
         }
         return result;
+    }
+}
+impl From<(f32,f32)> for Vector2{
+    fn from(value: (f32,f32)) -> Self {
+        Self{
+            x:value.0,
+            y:value.1
+        }
+    }
+}
+impl From<[f32;2]> for Vector2 {
+    fn from(value: [f32;2]) -> Self {
+        Self { x: value[0], y: value[1] }
     }
 }
 
@@ -182,7 +204,10 @@ impl Vector3 {
         self.distance_to_squared(v).sqrt()
     }
     pub fn distance_to_squared(&self, v: &Vector3) -> f32 {
-        (self.x - v.x).powf(2.0) + (self.y - v.y).powf(2.0) + (self.z - v.z).powf(2.0)
+        let dx = self.x - v.x;
+        let dy = self.y - v.y;
+        let dz = self.z - v.z;
+        dx*dx+dy*dy+dz*dz
     }
     pub fn length(&self) -> f32 {
         self.length_squared().sqrt()
@@ -200,11 +225,35 @@ impl Vector3 {
             z: self.z / len,
         }
     }
-    pub fn min(&self, rhs:Self)->Self{
-        Self { x: self.x.min(rhs.x), y: self.y.min(rhs.y), z: self.z.min(rhs.z) }
+    pub fn normalize_or_zero(&self) -> Self {
+        let len = self.length();
+        if len.abs() < EPSILON {
+            Self {
+                x: 0.0,
+                y: 0.0,
+                z: 0.0,
+            }
+        } else {
+            Self {
+                x: self.x / len,
+                y: self.y / len,
+                z: self.z / len,
+            }
+        }
     }
-    pub fn max(&self, rhs:Self)->Self{
-        Self { x: self.x.max(rhs.x), y: self.y.max(rhs.y), z: self.z.max(rhs.z) }
+    pub fn min(&self, rhs: Self) -> Self {
+        Self {
+            x: self.x.min(rhs.x),
+            y: self.y.min(rhs.y),
+            z: self.z.min(rhs.z),
+        }
+    }
+    pub fn max(&self, rhs: Self) -> Self {
+        Self {
+            x: self.x.max(rhs.x),
+            y: self.y.max(rhs.y),
+            z: self.z.max(rhs.z),
+        }
     }
     /// reflect direction of self, unnormalized
     pub fn reflect(self, normal: Vector3) -> Self {
@@ -327,13 +376,27 @@ impl std::ops::Neg for Vector3 {
         self * -1.0
     }
 }
-impl Sum for Vector3{
+impl Sum for Vector3 {
     fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
         let mut result = vec3(0.0, 0.0, 0.0);
-        for i in iter{
-            result=result+i;
+        for i in iter {
+            result = result + i;
         }
         return result;
+    }
+}
+impl From<(f32,f32,f32)> for Vector3{
+    fn from(value: (f32,f32,f32)) -> Self {
+        Self{
+            x:value.0,
+            y:value.1,
+            z:value.2
+        }
+    }
+}
+impl From<[f32;3]> for Vector3 {
+    fn from(value: [f32;3]) -> Self {
+        Self { x: value[0], y: value[1], z:value[2] }
     }
 }
 
