@@ -1,6 +1,6 @@
 use std::ops::Range;
 
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 use crate::{
     aabb::Aabb,
@@ -12,7 +12,7 @@ use crate::{
     ray::{HitRecord, Hitable},
 };
 
-#[derive(Clone, Copy, Deserialize, Debug)]
+#[derive(Clone, Copy, Deserialize, Serialize, Debug)]
 pub struct Sphere {
     pub center: Vector3,
     pub radius: f32,
@@ -60,7 +60,7 @@ impl Hitable for Sphere {
     }
 }
 
-#[derive(Clone, Copy, Deserialize, Debug)]
+#[derive(Clone, Copy, Deserialize, Serialize, Debug)]
 pub struct AxisAlignedBox {
     pub min: Vector3,
     pub max: Vector3,
@@ -173,7 +173,7 @@ impl Hitable for AxisAlignedBox {
     // }
 }
 /// https://raytracing.github.io/books/RayTracingTheNextWeek.html#quadrilaterals/definingthequadrilateral
-#[derive(Clone, Copy, Deserialize, Debug)]
+#[derive(Clone, Copy, Deserialize, Serialize, Debug)]
 pub struct Parallelogram {
     /// a corner of the parallelogram
     q: Vector3,
@@ -241,7 +241,7 @@ impl Hitable for Parallelogram {
     }
 }
 
-#[derive(Clone, Copy, Deserialize, Debug)]
+#[derive(Clone, Copy, Deserialize, Serialize, Debug)]
 pub struct Plane {
     /// a random point on the plane
     pub point: Vector3,
@@ -273,7 +273,7 @@ impl Hitable for Plane {
     }
 }
 
-#[derive(Clone, Copy, Deserialize)]
+#[derive(Clone, Copy, Deserialize, Serialize)]
 pub struct Triangle {
     vertices: [Vector3; 3],
 }

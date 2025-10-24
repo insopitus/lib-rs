@@ -1,6 +1,6 @@
 use std::{f32::EPSILON, iter::Sum};
 
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub struct Vector2 {
@@ -195,7 +195,7 @@ pub fn cross<T: CrossProduct>(a: T, b: T) -> T {
     a.cross(b)
 }
 
-#[derive(Debug, PartialEq, Clone, Copy, Deserialize)]
+#[derive(Debug, PartialEq, Clone, Copy, Deserialize, Serialize)]
 pub struct Vector3 {
     pub x: f32,
     pub y: f32,
