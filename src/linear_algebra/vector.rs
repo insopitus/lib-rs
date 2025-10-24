@@ -20,9 +20,9 @@ impl Vector2 {
         self.distance_to_squared(v).sqrt()
     }
     pub fn distance_to_squared(&self, v: &Vector2) -> f32 {
-        let dx = self.x-v.x;
-        let dy = self.y-v.y;
-        dx*dx+dy*dy
+        let dx = self.x - v.x;
+        let dy = self.y - v.y;
+        dx * dx + dy * dy
     }
     pub fn length(&self) -> f32 {
         self.length_squared().sqrt()
@@ -78,7 +78,7 @@ impl Vector2 {
 }
 impl DotProduct for Vector2 {
     fn dot(&self, rhs: Self) -> f32 {
-        self.x * rhs.x + self.y + rhs.y
+        self.x * rhs.x + self.y * rhs.y
     }
 }
 impl std::ops::Add for Vector2 {
@@ -158,17 +158,20 @@ impl Sum for Vector2 {
         return result;
     }
 }
-impl From<(f32,f32)> for Vector2{
-    fn from(value: (f32,f32)) -> Self {
-        Self{
-            x:value.0,
-            y:value.1
+impl From<(f32, f32)> for Vector2 {
+    fn from(value: (f32, f32)) -> Self {
+        Self {
+            x: value.0,
+            y: value.1,
         }
     }
 }
-impl From<[f32;2]> for Vector2 {
-    fn from(value: [f32;2]) -> Self {
-        Self { x: value[0], y: value[1] }
+impl From<[f32; 2]> for Vector2 {
+    fn from(value: [f32; 2]) -> Self {
+        Self {
+            x: value[0],
+            y: value[1],
+        }
     }
 }
 
@@ -209,7 +212,7 @@ impl Vector3 {
         let dx = self.x - v.x;
         let dy = self.y - v.y;
         let dz = self.z - v.z;
-        dx*dx+dy*dy+dz*dz
+        dx * dx + dy * dy + dz * dz
     }
     pub fn length(&self) -> f32 {
         self.length_squared().sqrt()
@@ -387,18 +390,22 @@ impl Sum for Vector3 {
         return result;
     }
 }
-impl From<(f32,f32,f32)> for Vector3{
-    fn from(value: (f32,f32,f32)) -> Self {
-        Self{
-            x:value.0,
-            y:value.1,
-            z:value.2
+impl From<(f32, f32, f32)> for Vector3 {
+    fn from(value: (f32, f32, f32)) -> Self {
+        Self {
+            x: value.0,
+            y: value.1,
+            z: value.2,
         }
     }
 }
-impl From<[f32;3]> for Vector3 {
-    fn from(value: [f32;3]) -> Self {
-        Self { x: value[0], y: value[1], z:value[2] }
+impl From<[f32; 3]> for Vector3 {
+    fn from(value: [f32; 3]) -> Self {
+        Self {
+            x: value[0],
+            y: value[1],
+            z: value[2],
+        }
     }
 }
 

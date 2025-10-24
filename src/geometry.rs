@@ -3,13 +3,16 @@ use std::ops::Range;
 use serde::Deserialize;
 
 use crate::{
-    aabb::Aabb, data_structures, linear_algebra::{
+    aabb::Aabb,
+    data_structures,
+    linear_algebra::{
         vector::{cross, dot},
         Vector3,
-    }, ray::{HitRecord, Hitable}
+    },
+    ray::{HitRecord, Hitable},
 };
 
-#[derive(Clone, Copy, Deserialize,Debug)]
+#[derive(Clone, Copy, Deserialize, Debug)]
 pub struct Sphere {
     pub center: Vector3,
     pub radius: f32,
@@ -34,7 +37,7 @@ impl Hitable for Sphere {
             // find the nearest root that lies in the acceptable range
             let mut root = (-half_b - sqrtd) / a;
             if !range.contains(&root) {
-                root = (-half_b - sqrtd) / a;
+                root = (-half_b + sqrtd) / a;
                 if !range.contains(&root) {
                     return None;
                 }
@@ -47,8 +50,8 @@ impl Hitable for Sphere {
                 normal: Vector3::ZERO,
                 t,
                 front_face: false,
-                u:0.0,
-                v:0.0,
+                u: 0.0,
+                v: 0.0,
             };
             let outward_normal = (p - self.center) / self.radius;
             record.set_face_normal(&ray, outward_normal);
@@ -57,7 +60,7 @@ impl Hitable for Sphere {
     }
 }
 
-#[derive(Clone, Copy, Deserialize,Debug)]
+#[derive(Clone, Copy, Deserialize, Debug)]
 pub struct AxisAlignedBox {
     pub min: Vector3,
     pub max: Vector3,
@@ -102,8 +105,8 @@ impl Hitable for AxisAlignedBox {
                 normal,
                 t: t_near,
                 front_face: true,
-                u:0.0,
-                v:0.0,
+                u: 0.0,
+                v: 0.0,
             })
         }
     }
@@ -170,7 +173,7 @@ impl Hitable for AxisAlignedBox {
     // }
 }
 /// https://raytracing.github.io/books/RayTracingTheNextWeek.html#quadrilaterals/definingthequadrilateral
-#[derive(Clone, Copy, Deserialize,Debug)]
+#[derive(Clone, Copy, Deserialize, Debug)]
 pub struct Parallelogram {
     /// a corner of the parallelogram
     q: Vector3,
@@ -190,46 +193,55 @@ impl Parallelogram {
         let n = cross(u, v);
         let normal: Vector3 = n.normalize();
         let d = dot(normal, q);
-        let w = n / dot(n,n);
-        Self { q, u, v, n:normal, d,w }
+        let w = n / dot(n, n);
+        Self {
+            q,
+            u,
+            v,
+            n: normal,
+            d,
+            w,
+        }
     }
 }
 impl Hitable for Parallelogram {
     fn hit(&self, ray: crate::ray::Ray, range: Range<f32>) -> Option<HitRecord> {
-        let denom = dot(self.n,ray.direction);
+        let denom = dot(self.n, ray.direction);
         // no hit if the ray is parallel to the plane
-        if denom.abs() < 1e-8{
+        if denom.abs() < 1e-8 {
             return None;
         }
-        let t = (self.d - dot(self.n,ray.origin)) / denom;
+        let t = (self.d - dot(self.n, ray.origin)) / denom;
         // return None if the hit point t is outside the range
-        if !range.contains(&t){
+        if !range.contains(&t) {
             return None;
         }
         // determin the hit point lies within the parallogram using
         // its plane coordinates(uv)
         let intersection = ray.at(t);
         let planar_hitpt_vector = intersection - self.q;
-        let alpha = dot(self.w,cross(planar_hitpt_vector,self.v));
-        let beta = dot(self.w,cross(self.u,planar_hitpt_vector));
-        if alpha > 1.0 || alpha < 0.0 || beta > 1.0 || beta < 0.0 {
+        let alpha = dot(self.w, cross(planar_hitpt_vector, self.v));
+        if alpha < 0.0 || alpha > 1.0 {
             return None;
         }
-        let mut rec = HitRecord{
+        let beta = dot(self.w, cross(self.u, planar_hitpt_vector));
+        if beta < 0.0 || beta > 1.0 {
+            return None;
+        }
+        let mut rec = HitRecord {
             point: intersection,
             normal: self.n,
             t,
             front_face: true,
-            u:alpha,
-            v:beta,
+            u: alpha,
+            v: beta,
         };
         rec.set_face_normal(&ray, self.n);
         Some(rec)
-
     }
 }
 
-#[derive(Clone, Copy, Deserialize,Debug)]
+#[derive(Clone, Copy, Deserialize, Debug)]
 pub struct Plane {
     /// a random point on the plane
     pub point: Vector3,
@@ -261,55 +273,58 @@ impl Hitable for Plane {
     }
 }
 
-#[derive(Clone, Copy,Deserialize)]
-pub struct Triangle{
-    vertices:[Vector3;3]
+#[derive(Clone, Copy, Deserialize)]
+pub struct Triangle {
+    vertices: [Vector3; 3],
 }
 
-
-pub struct TriMesh{
-    vertices:Vec<Vector3>,
-    indices:Vec<usize>
+pub struct TriMesh {
+    vertices: Vec<Vector3>,
+    indices: Vec<usize>,
 }
 
-impl TriMesh{
-    pub fn new(vertices:Vec<Vector3>,indices:Vec<usize>)->Self{
+impl TriMesh {
+    pub fn new(vertices: Vec<Vector3>, indices: Vec<usize>) -> Self {
         Self { vertices, indices }
     }
-    pub fn validate(&self)->Result<(),&'static str>{
-        if self.indices.len() % 3 != 0{
-            return Err("invalid indices count")
+    pub fn validate(&self) -> Result<(), &'static str> {
+        if self.indices.len() % 3 != 0 {
+            return Err("invalid indices count");
         }
-        let vert_len = self.vertices.len()-1;
+        let vert_len = self.vertices.len() - 1;
         // indices in bound
-        for i in &self.indices{
-            if *i > vert_len{
+        for i in &self.indices {
+            if *i > vert_len {
                 return Err("indice out of bound");
             }
         }
 
-        return Ok(())
+        return Ok(());
     }
 }
 
-pub struct Bvh{
-    tree: data_structures::binary_tree::Node<BvhNode>
+pub struct Bvh {
+    tree: data_structures::binary_tree::Node<BvhNode>,
 }
-struct BvhNode{
-    volume:Aabb,
-    triangles:Vec<Triangle>
+struct BvhNode {
+    volume: Aabb,
+    triangles: Vec<Triangle>,
 }
 
-impl Bvh{
-    pub fn from_trimesh(mesh:&TriMesh)->Self{
+impl Bvh {
+    pub fn from_trimesh(mesh: &TriMesh) -> Self {
         let mut aabb = Aabb::new();
-        for p in &mesh.vertices{
+        for p in &mesh.vertices {
             aabb.expand_by_point(*p);
         }
-        let mut triangles:Vec<Triangle> = Vec::with_capacity(mesh.indices.len()/3);
-        for i in 0..mesh.indices.len()/3{
-            triangles.push(Triangle{
-                vertices: [mesh.vertices[i*3],mesh.vertices[i*3+1],mesh.vertices[i*3+2]],
+        let mut triangles: Vec<Triangle> = Vec::with_capacity(mesh.indices.len() / 3);
+        for i in 0..mesh.indices.len() / 3 {
+            triangles.push(Triangle {
+                vertices: [
+                    mesh.vertices[i * 3],
+                    mesh.vertices[i * 3 + 1],
+                    mesh.vertices[i * 3 + 2],
+                ],
             });
         }
 
