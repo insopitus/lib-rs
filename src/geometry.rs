@@ -174,6 +174,7 @@ impl Hitable for AxisAlignedBox {
 }
 /// https://raytracing.github.io/books/RayTracingTheNextWeek.html#quadrilaterals/definingthequadrilateral
 #[derive(Clone, Copy, Deserialize, Serialize, Debug)]
+#[serde(from = "ParallelogramParams")]
 pub struct Parallelogram {
     /// a corner of the parallelogram
     q: Vector3,
@@ -240,6 +241,18 @@ impl Hitable for Parallelogram {
         Some(rec)
     }
 }
+// middleware for serde deserialize
+#[derive(Deserialize)]
+struct ParallelogramParams {
+    q: Vector3,
+    u: Vector3,
+    v: Vector3,
+}
+impl From<ParallelogramParams> for Parallelogram {
+    fn from(params: ParallelogramParams) -> Self {
+        Self::new(params.q, params.u, params.v)
+    }
+}
 
 #[derive(Clone, Copy, Deserialize, Serialize, Debug)]
 pub struct Plane {
@@ -250,30 +263,63 @@ pub struct Plane {
 }
 impl Hitable for Plane {
     fn hit(&self, ray: crate::ray::Ray, range: Range<f32>) -> Option<HitRecord> {
-        todo!()
-        // let denom = dot(self.normal,ray.direction);
-        // // no hit if the ray is parallel to the plane
-        // if denom.abs() < 1e-8{
-        //     return None;
-        // }
-        // // return None if the hit point t is outside the range
-        // let t = (self.d - dot(self.normal,ray.origin)) / denom;
-        // if !range.contains(&t){
-        //     return None;
-        // }
-        // let intersection = ray.at(t);
-        // let mut rec = HitRecord{
-        //     point: intersection,
-        //     normal: self.normal,
-        //     t,
-        //     front_face: true,
-        // };
-        // rec.set_face_normal(&ray, self.n);
-        // Some(rec)
+        let denom = dot(self.normal, ray.direction);
+        // no hit if the ray is parallel to the plane
+        if denom.abs() < 1e-8 {
+            return None;
+        }
+        // return None if the hit point t is outside the range
+        let t = dot(self.point - ray.origin, self.normal) / denom;
+        if !range.contains(&t) {
+            return None;
+        }
+        let intersection = ray.at(t);
+        let rec = HitRecord {
+            point: intersection,
+            normal: self.normal,
+            t,
+            front_face: denom < 0.0,
+            u: 0.,
+            v: 0.,
+        };
+        Some(rec)
     }
 }
 
-#[derive(Clone, Copy, Deserialize, Serialize)]
+#[derive(Clone, Copy, Debug, Deserialize, Serialize)]
+pub struct Circle {
+    center: Vector3,
+    radius: f32,
+    normal: Vector3,
+}
+impl Hitable for Circle {
+    fn hit(&self, ray: crate::ray::Ray, range: Range<f32>) -> Option<HitRecord> {
+        let plane = Plane {
+            point: self.center,
+            normal: self.normal,
+        };
+        if let Some(hit) = plane.hit(ray, range) {
+            let intersection = hit.point;
+            let distance = intersection - self.center;
+            if distance.length_squared() > self.radius * self.radius {
+                return None;
+            }
+            let rec = HitRecord {
+                point: intersection,
+                normal: self.normal,
+                t: hit.t,
+                front_face: hit.front_face,
+                u: 0.,
+                v: 0.,
+            };
+            Some(rec)
+        } else {
+            None
+        }
+    }
+}
+
+#[derive(Clone, Copy, Debug, Deserialize, Serialize)]
 pub struct Triangle {
     vertices: [Vector3; 3],
 }

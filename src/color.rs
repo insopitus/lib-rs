@@ -4,7 +4,7 @@ use std::{
     str::FromStr,
 };
 
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 pub trait Mix {
     fn mix(self, c: Self, a: f32) -> Self;
@@ -15,7 +15,7 @@ pub fn mix<T: Mix>(a: T, b: T, t: f32) -> T {
 }
 
 /// Color for GPU rendering and game development
-#[derive(Clone, Copy, Deserialize,Debug)]
+#[derive(Clone, Copy, Deserialize, Serialize, Debug)]
 pub struct Color {
     pub r: f32,
     pub g: f32,
