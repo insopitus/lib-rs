@@ -23,11 +23,11 @@ impl<T> DoublyLinkedList<T> {
         } else {
             todo!()
         }
-        if self.head.is_none() {
-        } else {
-        }
+        // if self.head.is_none() {
+        // } else {
+        // }
     }
-    pub fn prepend(&mut self, elem: T) {
+    pub fn prepend(&mut self, _elem: T) {
         todo!()
     }
     pub fn remove_first(&mut self) {
@@ -37,13 +37,13 @@ impl<T> DoublyLinkedList<T> {
 }
 
 struct Node<T> {
-    pub elem: T,
-    pub next: Option<Rc<RefCell<Node<T>>>>,
-    pub prev: Option<Weak<RefCell<Node<T>>>>,
+    pub _elem: T,
+    pub _next: Option<Rc<RefCell<Node<T>>>>,
+    pub _prev: Option<Weak<RefCell<Node<T>>>>,
 }
 
 impl<T> Node<T> {
-    pub fn new(item: T) -> Self {
+    pub fn _new(_item: T) -> Self {
         todo!()
     }
 }

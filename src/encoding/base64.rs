@@ -1,5 +1,3 @@
-use core::slice;
-
 //RFC 4648
 const TABLE: [u8; 64] = [
     b'A', b'B', b'C', b'D', b'E', b'F', b'G', b'H', b'I', b'J', b'K', b'L', b'M', b'N', b'O', b'P',

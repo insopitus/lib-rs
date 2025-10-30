@@ -350,11 +350,11 @@ impl TriMesh {
 }
 
 pub struct Bvh {
-    tree: data_structures::binary_tree::Node<BvhNode>,
+    _tree: data_structures::binary_tree::Node<BvhNode>,
 }
 struct BvhNode {
-    volume: Aabb,
-    triangles: Vec<Triangle>,
+    _volume: Aabb,
+    _triangles: Vec<Triangle>,
 }
 
 impl Bvh {

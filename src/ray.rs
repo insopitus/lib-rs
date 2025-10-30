@@ -1,22 +1,19 @@
 use std::ops::Range;
 
-use crate::{
-    geometry::Sphere,
-    linear_algebra::{vector::dot, Vector3},
-};
+use crate::linear_algebra::{vector::dot, Vector3};
 
 pub trait Hitable {
     fn hit(&self, ray: Ray, range: Range<f32>) -> Option<HitRecord>;
 }
 
-#[derive(Clone, Copy,Debug)]
+#[derive(Clone, Copy, Debug)]
 pub struct HitRecord {
     pub point: Vector3,
     pub normal: Vector3,
     pub t: f32,
     pub front_face: bool,
-    pub u:f32,
-    pub v:f32,
+    pub u: f32,
+    pub v: f32,
 }
 impl HitRecord {
     pub fn set_face_normal(&mut self, ray: &Ray, outward_normal: Vector3) {
