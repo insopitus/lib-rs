@@ -26,6 +26,7 @@ use crate::linear_algebra::vector::Vector4;
 impl std::ops::Mul<Vector4> for Matrix4 {
     type Output = Vector4;
     fn mul(self, _rhs: Vector4) -> Self::Output {
+        self.elements;
         todo!()
     }
 }

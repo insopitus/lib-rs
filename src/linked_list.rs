@@ -4,21 +4,21 @@ use std::{
 };
 
 pub struct DoublyLinkedList<T> {
-    head: Option<Rc<RefCell<Node<T>>>>,
+    _head: Option<Rc<RefCell<Node<T>>>>,
     tail: Option<Weak<RefCell<Node<T>>>>,
-    length: usize,
+    _length: usize,
 }
 
 impl<T> DoublyLinkedList<T> {
     pub fn new() -> Self {
         DoublyLinkedList {
-            head: None,
+            _head: None,
             tail: None,
-            length: 0,
+            _length: 0,
         }
     }
-    pub fn append(&mut self, elem: T) {
-        if let Some(tail) = &mut self.tail {
+    pub fn append(&mut self, _elem: T) {
+        if let Some(_tail) = &mut self.tail {
             todo!()
         } else {
             todo!()
