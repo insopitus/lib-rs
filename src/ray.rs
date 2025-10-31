@@ -9,14 +9,14 @@ pub trait Hitable {
     fn hit(&self, ray: Ray, range: Range<f32>) -> Option<HitRecord>;
 }
 
-#[derive(Clone, Copy,Debug)]
+#[derive(Clone, Copy, Debug)]
 pub struct HitRecord {
     pub point: Vector3,
     pub normal: Vector3,
     pub t: f32,
     pub front_face: bool,
-    pub u:f32,
-    pub v:f32,
+    pub u: f32,
+    pub v: f32,
 }
 impl HitRecord {
     pub fn set_face_normal(&mut self, ray: &Ray, outward_normal: Vector3) {
@@ -42,7 +42,10 @@ impl Ray {
         self.origin + distance * self.direction
     }
 
-    pub fn hit(&self, target: &Box<dyn Hitable + Sync>, range: Range<f32>) -> Option<HitRecord> {
+    pub fn hit<T>(&self, target: &T, range: Range<f32>) -> Option<HitRecord>
+    where
+        T: Hitable + Sync,
+    {
         target.hit(*self, range)
     }
 }

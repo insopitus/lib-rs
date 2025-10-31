@@ -321,7 +321,63 @@ impl Hitable for Circle {
 
 #[derive(Clone, Copy, Debug, Deserialize, Serialize)]
 pub struct Triangle {
-    vertices: [Vector3; 3],
+    a: Vector3,
+    b: Vector3,
+    c: Vector3,
+}
+impl Triangle {
+    pub fn new(a: Vector3, b: Vector3, c: Vector3) -> Self {
+        Self { a, b, c }
+    }
+}
+impl Hitable for Triangle {
+    fn hit(&self, ray: crate::ray::Ray, range: Range<f32>) -> Option<HitRecord> {
+        // Möller–Trumbore algorithm
+        // https://www.scratchapixel.com/lessons/3d-basic-rendering/ray-tracing-rendering-a-triangle/moller-trumbore-ray-triangle-intersection.html
+        let e1 = self.b - self.a;
+        let e2 = self.c - self.a;
+        let direction = ray.direction;
+        let origin = ray.origin;
+        let ray_cross_e2 = cross(direction, e2);
+        let det = dot(e1, ray_cross_e2);
+
+        if det > -f32::EPSILON && det < f32::EPSILON {
+            return None; // This ray is parallel to this triangle.
+        }
+
+        let inv_det = 1.0 / det;
+        let s = origin - self.a;
+        let u = inv_det * dot(s, ray_cross_e2);
+        if u < 0.0 || u > 1.0 {
+            return None;
+        }
+
+        let s_cross_e1 = cross(s, e1);
+        let v = inv_det * dot(direction, s_cross_e1);
+        if v < 0.0 || u + v > 1.0 {
+            return None;
+        }
+        // At this stage we can compute t to find out where the intersection point is on the line.
+        let t = inv_det * dot(e2, s_cross_e1);
+
+        if range.contains(&t) {
+            // ray intersection
+            let intersection_point = origin + direction * t;
+            // TODO: save the normal in struct field?
+            let normal = cross(e1, e2).normalize();
+            return Some(HitRecord {
+                point: intersection_point,
+                normal,
+                t,
+                front_face: dot(normal, direction) < 0.0,
+                u: 0.0,
+                v: 0.0,
+            });
+        } else {
+            // This means that there is a line intersection but not a ray intersection.
+            return None;
+        }
+    }
 }
 
 pub struct TriMesh {
@@ -366,11 +422,9 @@ impl Bvh {
         let mut triangles: Vec<Triangle> = Vec::with_capacity(mesh.indices.len() / 3);
         for i in 0..mesh.indices.len() / 3 {
             triangles.push(Triangle {
-                vertices: [
-                    mesh.vertices[i * 3],
-                    mesh.vertices[i * 3 + 1],
-                    mesh.vertices[i * 3 + 2],
-                ],
+                a: mesh.vertices[i * 3],
+                b: mesh.vertices[i * 3 + 1],
+                c: mesh.vertices[i * 3 + 2],
             });
         }
 
