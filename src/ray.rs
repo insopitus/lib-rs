@@ -1,9 +1,6 @@
 use std::ops::Range;
 
-use crate::{
-    geometry::Sphere,
-    linear_algebra::{vector::dot, Vector3},
-};
+use crate::linear_algebra::{vector::dot, Vector3};
 
 pub trait Hitable {
     fn hit(&self, ray: Ray, range: Range<f32>) -> Option<HitRecord>;

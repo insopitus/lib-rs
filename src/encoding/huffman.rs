@@ -65,7 +65,7 @@ pub fn encode(data: &[u8]) -> (Vec<u8>, Tree) {
     todo!()
 }
 
-pub fn decode(data: &[u8], tree_root: Tree) -> Vec<u8> {
+pub fn decode(_data: &[u8], _tree_root: Tree) -> Vec<u8> {
     todo!()
 }
 

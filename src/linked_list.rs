@@ -4,30 +4,30 @@ use std::{
 };
 
 pub struct DoublyLinkedList<T> {
-    head: Option<Rc<RefCell<Node<T>>>>,
+    _head: Option<Rc<RefCell<Node<T>>>>,
     tail: Option<Weak<RefCell<Node<T>>>>,
-    length: usize,
+    _length: usize,
 }
 
 impl<T> DoublyLinkedList<T> {
     pub fn new() -> Self {
         DoublyLinkedList {
-            head: None,
+            _head: None,
             tail: None,
-            length: 0,
+            _length: 0,
         }
     }
-    pub fn append(&mut self, elem: T) {
-        if let Some(tail) = &mut self.tail {
+    pub fn append(&mut self, _elem: T) {
+        if let Some(_tail) = &mut self.tail {
             todo!()
         } else {
             todo!()
         }
-        if self.head.is_none() {
-        } else {
-        }
+        // if self.head.is_none() {
+        // } else {
+        // }
     }
-    pub fn prepend(&mut self, elem: T) {
+    pub fn prepend(&mut self, _elem: T) {
         todo!()
     }
     pub fn remove_first(&mut self) {
@@ -37,13 +37,13 @@ impl<T> DoublyLinkedList<T> {
 }
 
 struct Node<T> {
-    pub elem: T,
-    pub next: Option<Rc<RefCell<Node<T>>>>,
-    pub prev: Option<Weak<RefCell<Node<T>>>>,
+    pub _elem: T,
+    pub _next: Option<Rc<RefCell<Node<T>>>>,
+    pub _prev: Option<Weak<RefCell<Node<T>>>>,
 }
 
 impl<T> Node<T> {
-    pub fn new(item: T) -> Self {
+    pub fn _new(_item: T) -> Self {
         todo!()
     }
 }
