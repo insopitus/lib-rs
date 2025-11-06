@@ -39,7 +39,10 @@ impl Ray {
         self.origin + distance * self.direction
     }
 
-    pub fn hit(&self, target: &Box<dyn Hitable + Sync>, range: Range<f32>) -> Option<HitRecord> {
+    pub fn hit<T>(&self, target: &T, range: Range<f32>) -> Option<HitRecord>
+    where
+        T: Hitable + Sync,
+    {
         target.hit(*self, range)
     }
 }
