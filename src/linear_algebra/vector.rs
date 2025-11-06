@@ -2,7 +2,7 @@ use std::{f32::EPSILON, iter::Sum};
 
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, PartialEq, Clone, Copy)]
+#[derive(Debug, PartialEq, Clone, Copy, Serialize, Deserialize)]
 pub struct Vector2 {
     pub x: f32,
     pub y: f32,

@@ -6,7 +6,7 @@ use crate::{
     aabb::Aabb,
     data_structures,
     linear_algebra::{
-        vector::{cross, dot},
+        vector::{cross, dot, Vector2},
         Vector3,
     },
     ray::{HitRecord, Hitable},
@@ -320,8 +320,17 @@ impl Hitable for Circle {
 }
 
 #[derive(Clone, Copy, Debug, Deserialize, Serialize)]
+struct Vertex {
+    position: Vector3,
+    normal: Vector3,
+    uv: Vector2,
+}
+
+#[derive(Clone, Copy, Debug, Deserialize, Serialize)]
 pub struct Triangle {
-    vertices: [Vector3; 3],
+    vertices: [Vertex; 3],
+    /// geometric normal
+    normal: Vector3,
 }
 
 pub struct TriMesh {
@@ -365,13 +374,13 @@ impl Bvh {
         }
         let mut triangles: Vec<Triangle> = Vec::with_capacity(mesh.indices.len() / 3);
         for i in 0..mesh.indices.len() / 3 {
-            triangles.push(Triangle {
-                vertices: [
-                    mesh.vertices[i * 3],
-                    mesh.vertices[i * 3 + 1],
-                    mesh.vertices[i * 3 + 2],
-                ],
-            });
+            // triangles.push(Triangle {
+            //     vertices: [
+            //         mesh.vertices[i * 3],
+            //         mesh.vertices[i * 3 + 1],
+            //         mesh.vertices[i * 3 + 2],
+            //     ],
+            // });
         }
 
         todo!()
