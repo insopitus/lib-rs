@@ -60,18 +60,19 @@ impl Hitable for Sphere {
     }
 }
 
+/// an axis-aligned box geometry (renderable, while the `Aabb` struct is a math structure only used for bvh)
 #[derive(Clone, Copy, Deserialize, Serialize, Debug)]
-pub struct AxisAlignedBox {
+pub struct Box {
     pub min: Vector3,
     pub max: Vector3,
 }
-impl AxisAlignedBox {
+impl Box {
     pub fn new(min: Vector3, max: Vector3) -> Self {
         Self { min, max }
     }
 }
 
-impl Hitable for AxisAlignedBox {
+impl Hitable for Box {
     fn hit(&self, ray: crate::ray::Ray, range: Range<f32>) -> Option<HitRecord> {
         let t_min = (self.min - ray.origin) / ray.direction;
         let t_max = (self.max - ray.origin) / ray.direction;
@@ -173,9 +174,11 @@ impl Hitable for AxisAlignedBox {
     // }
 }
 /// https://raytracing.github.io/books/RayTracingTheNextWeek.html#quadrilaterals/definingthequadrilateral
+///
+/// acturally a parallelogram
 #[derive(Clone, Copy, Deserialize, Serialize, Debug)]
-#[serde(from = "ParallelogramParams")]
-pub struct Parallelogram {
+#[serde(from = "QuadParams")]
+pub struct Quad {
     /// a corner of the parallelogram
     q: Vector3,
     /// a vector on the edge from the corner q
@@ -189,7 +192,7 @@ pub struct Parallelogram {
     // n / n · n
     w: Vector3,
 }
-impl Parallelogram {
+impl Quad {
     pub fn new(q: Vector3, u: Vector3, v: Vector3) -> Self {
         let n = cross(u, v);
         let normal: Vector3 = n.normalize();
@@ -205,7 +208,7 @@ impl Parallelogram {
         }
     }
 }
-impl Hitable for Parallelogram {
+impl Hitable for Quad {
     fn hit(&self, ray: crate::ray::Ray, range: Range<f32>) -> Option<HitRecord> {
         let denom = dot(self.n, ray.direction);
         // no hit if the ray is parallel to the plane
@@ -243,13 +246,13 @@ impl Hitable for Parallelogram {
 }
 // middleware for serde deserialize
 #[derive(Deserialize)]
-struct ParallelogramParams {
+struct QuadParams {
     q: Vector3,
     u: Vector3,
     v: Vector3,
 }
-impl From<ParallelogramParams> for Parallelogram {
-    fn from(params: ParallelogramParams) -> Self {
+impl From<QuadParams> for Quad {
+    fn from(params: QuadParams) -> Self {
         Self::new(params.q, params.u, params.v)
     }
 }

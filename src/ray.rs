@@ -1,6 +1,6 @@
 use std::ops::Range;
 
-use crate::linear_algebra::{vector::dot, Vector3};
+use crate::linear_algebra::{vector::dot, Transform, Vector3};
 
 pub trait Hitable {
     fn hit(&self, ray: Ray, range: Range<f32>) -> Option<HitRecord>;
@@ -39,10 +39,49 @@ impl Ray {
         self.origin + distance * self.direction
     }
 
-    pub fn hit<T>(&self, target: &T, range: Range<f32>) -> Option<HitRecord>
+    pub fn hit<T>(
+        &self,
+        target: &T,
+        range: Range<f32>,
+        transform: Option<Transform>,
+    ) -> Option<HitRecord>
     where
         T: Hitable + Sync,
     {
-        target.hit(*self, range)
+        if let Some(trans) = transform {
+            let rotation = trans.rotation;
+            let translation = trans.translation;
+            let cos_theta = rotation.cos();
+            let sin_theta = rotation.sin();
+            let direction = Vector3::new(
+                self.direction.x * cos_theta - self.direction.z * sin_theta,
+                self.direction.y,
+                self.direction.x * sin_theta + self.direction.z * cos_theta,
+            );
+            let o = self.origin - translation;
+            let origin = Vector3::new(
+                o.x * cos_theta - o.z * sin_theta,
+                o.y,
+                o.x * sin_theta + o.z * cos_theta,
+            );
+            let rotated_ray = Ray::new(origin, direction);
+            let mut record = target.hit(rotated_ray, range);
+            if let Some(ref mut rec) = record {
+                let p = rec.point;
+                rec.point = Vector3::new(
+                    p.x * cos_theta + p.z * sin_theta,
+                    p.y,
+                    -p.x * sin_theta + p.z * cos_theta,
+                ) + translation;
+                rec.normal = Vector3::new(
+                    rec.normal.x * cos_theta + rec.normal.z * sin_theta,
+                    rec.normal.y,
+                    -rec.normal.x * sin_theta + rec.normal.z * cos_theta,
+                );
+            }
+            record
+        } else {
+            target.hit(*self, range)
+        }
     }
 }
