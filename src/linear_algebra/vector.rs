@@ -351,6 +351,16 @@ impl std::ops::Mul<Vector3> for f32 {
         }
     }
 }
+impl std::ops::Mul<Vector3> for Vector3 {
+    type Output = Vector3;
+    fn mul(self, rhs: Vector3) -> Self::Output {
+        Self::Output {
+            x: self.x * rhs.x,
+            y: self.y * rhs.y,
+            z: self.z * rhs.z,
+        }
+    }
+}
 impl std::ops::Div<f32> for Vector3 {
     type Output = Vector3;
 
