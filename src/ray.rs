@@ -1,9 +1,13 @@
 use std::ops::Range;
 
-use crate::linear_algebra::{vector::dot, Transform, Vector3};
+use crate::{
+    aabb::Aabb,
+    linear_algebra::{vector::dot, Transform, Vector3},
+};
 
 pub trait Hitable {
     fn hit(&self, ray: Ray, range: Range<f32>) -> Option<HitRecord>;
+    fn bounding_box(&self) -> Aabb;
 }
 
 #[derive(Clone, Copy, Debug)]

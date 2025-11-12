@@ -1,4 +1,4 @@
-use std::ops::Range;
+use std::{f32::INFINITY, ops::Range};
 
 use serde::{Deserialize, Serialize};
 
@@ -6,7 +6,7 @@ use crate::{
     aabb::Aabb,
     data_structures,
     linear_algebra::{
-        vector::{cross, dot, Vector2},
+        vector::{cross, dot, vec3, Vector2},
         Vector3,
     },
     ray::{HitRecord, Hitable},
@@ -56,6 +56,13 @@ impl Hitable for Sphere {
             let outward_normal = (p - self.center) / self.radius;
             record.set_face_normal(&ray, outward_normal);
             Some(record)
+        }
+    }
+    fn bounding_box(&self) -> Aabb {
+        let half = vec3(self.radius, self.radius, self.radius);
+        Aabb {
+            min: self.center - half,
+            max: self.center + half,
         }
     }
 }
@@ -111,67 +118,12 @@ impl Hitable for Box {
             })
         }
     }
-    // fn hit(&self, ray: crate::ray::Ray, range: Range<f32>) -> Option<HitRecord> {
-    //     let mut t_min = 0.0;
-    //     let mut t_max = f32::INFINITY;
-    //     let ray_dir = [ray.direction.x, ray.direction.y, ray.direction.z];
-    //     let ray_origin = [ray.origin.x, ray.origin.y, ray.origin.z];
-    //     let min = [self.min.x, self.min.y, self.min.z];
-    //     let max = [self.max.x, self.max.y, self.max.z];
-    //     for i in 0..3 {
-    //         let inv_d = 1.0 / ray_dir[i];
-    //         let mut t0 = (min[i] - ray_origin[i]) * inv_d;
-    //         let mut t1 = (max[i] - ray_origin[i]) * inv_d;
-
-    //         if inv_d < 0.0 {
-    //             std::mem::swap(&mut t0, &mut t1);
-    //         }
-
-    //         t_min = t0.max(t_min);
-    //         t_max = t1.min(t_max);
-
-    //         if t_min > t_max {
-    //             return None; // 如果没有相交，则返回None
-    //         }
-    //     }
-
-    //     if t_min >= range.start && t_min <= range.end {
-    //         let hit_point = ray.at(t_min);
-    //         let outward_normal = if t_min == t_max {
-    //             // 边界情况，选择一个合适的法向量
-    //             let mut normal = Vector3::ZERO;
-    //             if hit_point.x == self.min.x {
-    //                 normal.x = -1.0;
-    //             } else if hit_point.x == self.max.x {
-    //                 normal.x = 1.0;
-    //             }
-    //             if hit_point.y == self.min.y {
-    //                 normal.y = -1.0;
-    //             } else if hit_point.y == self.max.y {
-    //                 normal.y = 1.0;
-    //             }
-    //             if hit_point.z == self.min.z {
-    //                 normal.z = -1.0;
-    //             } else if hit_point.z == self.max.z {
-    //                 normal.z = 1.0;
-    //             }
-    //             dbg!(normal);
-    //             normal.normalize()
-    //         } else {
-    //             // 对于内部点，可以通过hit_point和盒子中心计算法向量
-    //             ((hit_point - (self.min + self.max) / 2.0).normalize())
-    //         };
-
-    //         Some(HitRecord {
-    //             point: hit_point,
-    //             normal: outward_normal,
-    //             t: t_min,
-    //             front_face: true, // 假设光线从外部指向内部（可以根据实际需求调整）
-    //         })
-    //     } else {
-    //         None
-    //     }
-    // }
+    fn bounding_box(&self) -> Aabb {
+        Aabb {
+            min: self.min,
+            max: self.max,
+        }
+    }
 }
 /// https://raytracing.github.io/books/RayTracingTheNextWeek.html#quadrilaterals/definingthequadrilateral
 ///
@@ -243,6 +195,15 @@ impl Hitable for Quad {
         rec.set_face_normal(&ray, self.n);
         Some(rec)
     }
+    fn bounding_box(&self) -> Aabb {
+        let a = self.q;
+        let b = a + self.u;
+        let c = b + self.v;
+        let d = a + self.v;
+        let min = a.min(b).min(c).min(d);
+        let max = a.max(b).max(c).max(d);
+        Aabb { min, max }
+    }
 }
 // middleware for serde deserialize
 #[derive(Deserialize)]
@@ -287,6 +248,13 @@ impl Hitable for Plane {
         };
         Some(rec)
     }
+    /// it's wrong, but i just don't want to make the function return a Option<Aabb> for now.
+    fn bounding_box(&self) -> Aabb {
+        Aabb {
+            min: vec3(-INFINITY, -INFINITY, -INFINITY),
+            max: vec3(INFINITY, INFINITY, INFINITY),
+        }
+    }
 }
 
 #[derive(Clone, Copy, Debug, Deserialize, Serialize)]
@@ -319,6 +287,12 @@ impl Hitable for Circle {
         } else {
             None
         }
+    }
+    fn bounding_box(&self) -> Aabb {
+        let delta = (vec3(1.0, 1.0, 1.0) - self.normal * self.normal) * self.radius;
+        let min = self.center - delta;
+        let max = self.center + delta;
+        Aabb { min, max }
     }
 }
 
@@ -388,6 +362,12 @@ impl Hitable for Triangle {
             return None;
         }
     }
+    fn bounding_box(&self) -> Aabb {
+        Aabb {
+            min: self.a.min(self.b).min(self.c),
+            max: self.a.max(self.b).max(self.c),
+        }
+    }
 }
 
 pub struct TriMesh {
@@ -415,31 +395,12 @@ impl TriMesh {
     }
 }
 
-pub struct Bvh {
-    _tree: data_structures::binary_tree::Node<BvhNode>,
+pub struct Bvh<T> {
+    _tree: data_structures::binary_tree::Node<BvhNode<T>>,
 }
-struct BvhNode {
+struct BvhNode<T> {
     _volume: Aabb,
-    _triangles: Vec<Triangle>,
+    object: Vec<T>,
 }
 
-impl Bvh {
-    pub fn from_trimesh(mesh: &TriMesh) -> Self {
-        let mut aabb = Aabb::new();
-        for p in &mesh.vertices {
-            aabb.expand_by_point(*p);
-        }
-        let mut triangles: Vec<Triangle> = Vec::with_capacity(mesh.indices.len() / 3);
-        for i in 0..mesh.indices.len() / 3 {
-            // triangles.push(Triangle {
-            //     vertices: [
-            //         mesh.vertices[i * 3],
-            //         mesh.vertices[i * 3 + 1],
-            //         mesh.vertices[i * 3 + 2],
-            //     ],
-            // });
-        }
-
-        todo!()
-    }
-}
+impl<T> Bvh<T> {}
