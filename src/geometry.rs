@@ -395,6 +395,31 @@ impl TriMesh {
     }
 }
 
+#[derive(Serialize, Deserialize, Debug)]
+pub enum Geometry {
+    Sphere(Sphere),
+    Quad(Quad),
+    Box(Box),
+    Circle(Circle),
+    Plane(Plane),
+}
+impl Geometry {
+    pub fn hit(
+        &self,
+        ray: crate::ray::Ray,
+        range: std::ops::Range<f32>,
+        transform: Option<crate::linear_algebra::Transform>,
+    ) -> Option<HitRecord> {
+        match self {
+            Geometry::Sphere(sphere) => ray.hit(sphere, range, transform),
+            Geometry::Quad(quad) => ray.hit(quad, range, transform),
+            Geometry::Box(b) => ray.hit(b, range, transform),
+            Geometry::Circle(circle) => ray.hit(circle, range, transform),
+            Geometry::Plane(plane) => ray.hit(plane, range, transform),
+        }
+    }
+}
+
 pub struct Bvh<T> {
     _tree: data_structures::binary_tree::Node<BvhNode<T>>,
 }
