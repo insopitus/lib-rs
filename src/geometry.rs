@@ -418,14 +418,32 @@ impl Geometry {
             Geometry::Plane(plane) => ray.hit(plane, range, transform),
         }
     }
+    pub fn compute_aabb(&self) -> Aabb {
+        match self {
+            Geometry::Sphere(sphere) => sphere.bounding_box(),
+            Geometry::Quad(quad) => quad.bounding_box(),
+            Geometry::Box(b) => b.bounding_box(),
+            Geometry::Circle(circle) => circle.bounding_box(),
+            Geometry::Plane(plane) => plane.bounding_box(),
+        }
+    }
 }
 
-pub struct Bvh<T> {
-    _tree: data_structures::binary_tree::Node<BvhNode<T>>,
+pub struct Bvh {
+    tree: data_structures::binary_tree::Node<BvhNode<Geometry>>,
 }
 struct BvhNode<T> {
-    _volume: Aabb,
+    volume: Aabb,
     object: Vec<T>,
 }
 
-impl<T> Bvh<T> {}
+impl Bvh {
+    pub fn new() -> Self {
+        Self {
+            tree: data_structures::binary_tree::Node::new(BvhNode {
+                volume: Aabb::new(vec3(0.0, 0.0, 0.0), vec3(0.0, 0.0, 0.0)),
+                object: Vec::new(),
+            }),
+        }
+    }
+}
