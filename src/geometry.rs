@@ -441,7 +441,7 @@ impl Bvh {
     pub fn new() -> Self {
         Self {
             tree: data_structures::binary_tree::Node::new(BvhNode {
-                volume: Aabb::new(vec3(0.0, 0.0, 0.0), vec3(0.0, 0.0, 0.0)),
+                volume: Aabb::from_min_max(vec3(0.0, 0.0, 0.0), vec3(0.0, 0.0, 0.0)),
                 object: Vec::new(),
             }),
         }
