@@ -4,6 +4,8 @@ use std::{
     str::FromStr,
 };
 
+use serde::{Deserialize, Serialize};
+
 pub trait Mix {
     fn mix(self, c: Self, a: f32) -> Self;
 }
@@ -13,7 +15,7 @@ pub fn mix<T: Mix>(a: T, b: T, t: f32) -> T {
 }
 
 /// Color for GPU rendering and game development
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Deserialize, Serialize, Debug)]
 pub struct Color {
     pub r: f32,
     pub g: f32,
@@ -59,19 +61,20 @@ impl Color {
             (self.a * 255.0) as u8,
         ]
     }
-    pub fn linear_to_gamma(&self, gamma: f32) -> Self {
+    pub fn linear_to_srgb(&self, gamma: f32) -> Self {
+        let factor = 1.0 / gamma;
         Self {
-            r: self.r.powf(1.0 / gamma),
-            g: self.g.powf(1.0 / gamma),
-            b: self.b.powf(1.0 / gamma),
-            a: self.a.powf(1.0 / gamma),
+            r: self.r.powf(factor),
+            g: self.g.powf(factor),
+            b: self.b.powf(factor),
+            a: self.a.powf(factor),
         }
     }
 }
 impl FromStr for Color {
     type Err = String;
 
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
+    fn from_str(_s: &str) -> Result<Self, Self::Err> {
         todo!()
     }
 }
