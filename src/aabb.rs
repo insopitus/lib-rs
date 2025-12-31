@@ -18,9 +18,6 @@ impl Default for Aabb {
     }
 }
 impl Aabb {
-    pub fn new(min: Vector3, max: Vector3) -> Self {
-        Self { min, max }
-    }
     pub fn empty() -> Self {
         Self::default()
     }
